@@ -5,7 +5,7 @@ import {
   type EngineState,
   type EngineAction,
 } from "./engine-reducer";
-import type { BackgroundConfig, SlideConfig } from "@/types/layerslide";
+import type { BackgroundConfig, SlideConfig, TransitionType } from "@/types/layerslide";
 
 interface EngineContextValue {
   state: EngineState;
@@ -18,10 +18,14 @@ interface EngineProviderProps {
   children: ReactNode;
   slides: SlideConfig[];
   background: BackgroundConfig;
+  transition?: TransitionType;
 }
 
-export const EngineProvider = ({ children, slides, background }: EngineProviderProps) => {
-  const [state, dispatch] = useReducer(undoableReducer, createInitialState(slides, background));
+export const EngineProvider = ({ children, slides, background, transition }: EngineProviderProps) => {
+  const [state, dispatch] = useReducer(
+    undoableReducer,
+    createInitialState(slides, background, transition)
+  );
 
   return (
     <EngineContext.Provider value={{ state, dispatch }}>

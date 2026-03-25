@@ -108,6 +108,7 @@ const Index = () => {
     <PresentationEngine
       slides={saved?.slides ?? demoSlides}
       background={saved?.background ?? demoBackground}
+      transition={saved?.transition}
     />
   );
 };

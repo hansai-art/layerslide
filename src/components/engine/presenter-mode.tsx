@@ -38,15 +38,17 @@ const PresenterMode = ({ isOpen, onClose }: PresenterModeProps) => {
   const nextSlide = state.slides[currentSlide + 1] ?? null;
   const notes = slide?.notes ?? "";
 
-  // Overlay text preview for current slide
+  // Strip HTML tags for text preview
+  const stripHtml = (html: string) => html.replace(/<[^>]+>/g, "");
+
   const currentOverlayText = slide?.overlays
     .filter((o) => o.visible)
-    .map((o) => o.text)
+    .map((o) => stripHtml(o.text))
     .join(" / ") || "";
 
   const nextOverlayText = nextSlide?.overlays
     .filter((o) => o.visible)
-    .map((o) => o.text)
+    .map((o) => stripHtml(o.text))
     .join(" / ") || "";
 
   // Timer logic

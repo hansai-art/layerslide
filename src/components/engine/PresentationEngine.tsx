@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useRef, useState } from "react";
-import type { BackgroundConfig, SlideConfig } from "@/types/layerslide";
+import type { BackgroundConfig, SlideConfig, TransitionType } from "@/types/layerslide";
 import { EngineProvider } from "./state/engine-context";
 import { useEngine } from "@/hooks/use-engine";
 import { useFpsMonitor } from "@/hooks/use-fps-monitor";
@@ -17,6 +17,7 @@ import OnboardingTutorial from "./onboarding-tutorial";
 interface PresentationEngineProps {
   slides: SlideConfig[];
   background: BackgroundConfig;
+  transition?: TransitionType;
 }
 
 /** Inner component that consumes engine context */
@@ -184,9 +185,9 @@ const EngineInner = () => {
 };
 
 /** Main engine: wraps everything in EngineProvider */
-const PresentationEngine = ({ slides, background }: PresentationEngineProps) => {
+const PresentationEngine = ({ slides, background, transition }: PresentationEngineProps) => {
   return (
-    <EngineProvider slides={slides} background={background}>
+    <EngineProvider slides={slides} background={background} transition={transition}>
       <EngineInner />
     </EngineProvider>
   );

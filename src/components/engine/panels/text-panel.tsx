@@ -3,6 +3,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
+import { Textarea } from "@/components/ui/textarea";
 import { Plus, Trash2, GripVertical } from "lucide-react";
 import type { OverlayPosition, OverlayAnimation } from "@/types/layerslide";
 import { cn } from "@/lib/utils";
@@ -109,11 +110,11 @@ const TextPanel = () => {
             </button>
           </div>
 
-          {/* Text content edit */}
+          {/* Text content edit — preserves HTML */}
           <div className="space-y-1">
-            <span className="text-[10px] text-muted-foreground">文字內容</span>
-            <Input
-              value={overlay.text.replace(/<[^>]+>/g, "")}
+            <span className="text-[10px] text-muted-foreground">文字內容 (HTML)</span>
+            <Textarea
+              value={overlay.text}
               onChange={(e) =>
                 dispatch({
                   type: "UPDATE_OVERLAY",
@@ -122,8 +123,8 @@ const TextPanel = () => {
                   updates: { text: e.target.value },
                 })
               }
-              className="h-7 text-xs bg-ls-surface-1"
-              placeholder="輸入文字..."
+              className="text-xs font-mono bg-ls-surface-1 min-h-[60px] resize-none"
+              placeholder="輸入文字或 HTML..."
             />
           </div>
 

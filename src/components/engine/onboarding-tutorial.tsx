@@ -187,7 +187,7 @@ const OnboardingTutorial = ({ forceOpen }: OnboardingTutorialProps) => {
           setCurrentStep(0);
         }}
         className={cn(
-          "fixed z-[11] flex items-center justify-center",
+          "fixed z-[6] flex items-center justify-center",
           "w-10 h-10 rounded-full",
           "bg-ls-surface-1 border border-border text-muted-foreground",
           "hover:text-foreground hover:border-primary/40 transition-all duration-200",

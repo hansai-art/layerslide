@@ -57,13 +57,14 @@ const EPHEMERAL_ACTIONS = new Set([
 
 export function createInitialState(
   slides: SlideConfig[],
-  background: BackgroundConfig
+  background: BackgroundConfig,
+  transition?: TransitionType
 ): EngineState {
   return {
     currentSlide: 0,
     slides,
     background,
-    transition: "fade",
+    transition: transition ?? "fade",
     panelOpen: false,
     isPresenting: true,
     fps: 60,
