@@ -42,8 +42,11 @@ export interface SketchModule {
 export type OverlayPosition = "top" | "center" | "bottom" | "custom";
 export type OverlayAnimation = "fadeIn" | "slideUp" | "typewriter" | "none";
 
+export type OverlayType = "text" | "image";
+
 export interface TextOverlay {
   id: string;
+  type?: OverlayType; // default "text" for backwards compat
   text: string;
   position: OverlayPosition;
   animation: OverlayAnimation;
@@ -55,6 +58,12 @@ export interface TextOverlay {
     textShadow?: string;
     padding?: string;
   };
+  // Image-specific fields
+  imageSrc?: string;
+  imageWidth?: number;  // px
+  imageHeight?: number; // px
+  imageOpacity?: number; // 0-1
+  imageBorderRadius?: number; // px
   customPosition?: { x: number; y: number };
   visible: boolean;
 }

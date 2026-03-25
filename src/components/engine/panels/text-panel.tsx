@@ -1,10 +1,11 @@
+import { useRef } from "react";
 import { useEngine } from "@/hooks/use-engine";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, GripVertical } from "lucide-react";
+import { Plus, Trash2, GripVertical, ImagePlus, Type as TypeIcon } from "lucide-react";
 import type { OverlayPosition, OverlayAnimation } from "@/types/layerslide";
 import { cn } from "@/lib/utils";
 
@@ -28,18 +29,20 @@ const animationOptions: { value: OverlayAnimation; label: string }[] = [
   { value: "none", label: "無" },
 ];
 
-/** Interactive text overlay editor */
+/** Interactive overlay editor (text + image) */
 const TextPanel = () => {
   const { state, dispatch } = useEngine();
   const { currentSlide, slides } = state;
   const overlays = slides[currentSlide]?.overlays ?? [];
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleAddOverlay = () => {
+  const handleAddText = () => {
     dispatch({
       type: "ADD_OVERLAY",
       slideIndex: currentSlide,
       overlay: {
         id: `overlay-${Date.now()}`,
+        type: "text",
         text: "新文字區塊",
         position: "center",
         animation: "fadeIn",
@@ -52,6 +55,49 @@ const TextPanel = () => {
     });
   };
 
+  const handleAddImageUrl = () => {
+    const url = prompt("輸入圖片網址 (URL)：");
+    if (!url) return;
+    dispatch({
+      type: "ADD_OVERLAY",
+      slideIndex: currentSlide,
+      overlay: {
+        id: `overlay-${Date.now()}`,
+        type: "image",
+        text: "",
+        imageSrc: url,
+        imageWidth: 400,
+        position: "center",
+        animation: "fadeIn",
+        visible: true,
+      },
+    });
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      dispatch({
+        type: "ADD_OVERLAY",
+        slideIndex: currentSlide,
+        overlay: {
+          id: `overlay-${Date.now()}`,
+          type: "image",
+          text: file.name,
+          imageSrc: reader.result as string,
+          imageWidth: 400,
+          position: "center",
+          animation: "fadeIn",
+          visible: true,
+        },
+      });
+    };
+    reader.readAsDataURL(file);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const handleDeleteOverlay = (overlayId: string) => {
     dispatch({
       type: "REMOVE_OVERLAY",
@@ -62,215 +108,353 @@ const TextPanel = () => {
 
   return (
     <div className="space-y-4">
+      {/* Add buttons */}
       <div className="flex items-center justify-between">
-        <SectionLabel>文字區塊 ({overlays.length})</SectionLabel>
-        <button
-          onClick={handleAddOverlay}
-          className={cn(
-            "flex items-center gap-1 px-2 py-1 rounded-md text-[10px]",
-            "bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-          )}
-        >
-          <Plus className="w-3 h-3" />
-          新增
-        </button>
+        <SectionLabel>覆蓋層 ({overlays.length})</SectionLabel>
+        <div className="flex gap-1">
+          <button
+            onClick={handleAddText}
+            className={cn(
+              "flex items-center gap-1 px-2 py-1 rounded-md text-[10px]",
+              "bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+            )}
+          >
+            <TypeIcon className="w-3 h-3" />
+            文字
+          </button>
+          <button
+            onClick={handleAddImageUrl}
+            className={cn(
+              "flex items-center gap-1 px-2 py-1 rounded-md text-[10px]",
+              "bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+            )}
+          >
+            <ImagePlus className="w-3 h-3" />
+            圖片
+          </button>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className={cn(
+              "flex items-center gap-1 px-2 py-1 rounded-md text-[10px]",
+              "bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+            )}
+          >
+            <Plus className="w-3 h-3" />
+            上傳
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileUpload}
+            className="hidden"
+          />
+        </div>
       </div>
 
       {overlays.length === 0 && (
         <p className="text-xs text-ls-text-dim text-center py-4">
-          此投影片沒有文字區塊，點擊上方「新增」按鈕建立。
+          此投影片沒有覆蓋層，點擊上方按鈕新增文字或圖片。
         </p>
       )}
 
-      {overlays.map((overlay) => (
-        <div key={overlay.id} className="rounded-lg bg-ls-surface-2 p-3 space-y-3">
-          {/* Header: drag handle + name + visibility + delete */}
-          <div className="flex items-center gap-2">
-            <GripVertical className="w-3 h-3 text-ls-text-dim flex-shrink-0" />
-            <span className="text-[11px] text-muted-foreground truncate flex-1">
-              {overlay.text.replace(/<[^>]+>/g, "").slice(0, 25) || "（無文字）"}
-            </span>
-            <Switch
-              checked={overlay.visible}
-              onCheckedChange={(visible) =>
-                dispatch({
-                  type: "SET_OVERLAY_VISIBILITY",
-                  slideIndex: currentSlide,
-                  overlayId: overlay.id,
-                  visible,
-                })
-              }
-            />
-            <button
-              onClick={() => handleDeleteOverlay(overlay.id)}
-              className="p-1 rounded hover:bg-destructive/10 text-ls-text-dim hover:text-destructive transition-colors"
-              title="刪除"
-            >
-              <Trash2 className="w-3 h-3" />
-            </button>
-          </div>
+      {overlays.map((overlay) => {
+        const isImage = overlay.type === "image";
 
-          {/* Text content edit: preserves HTML */}
-          <div className="space-y-1">
-            <span className="text-[10px] text-muted-foreground">文字內容 (HTML)</span>
-            <Textarea
-              value={overlay.text}
-              onChange={(e) =>
-                dispatch({
-                  type: "UPDATE_OVERLAY",
-                  slideIndex: currentSlide,
-                  overlayId: overlay.id,
-                  updates: { text: e.target.value },
-                })
-              }
-              className="text-xs font-mono bg-ls-surface-1 min-h-[60px] resize-none"
-              placeholder="輸入文字或 HTML..."
-            />
-          </div>
-
-          {/* Position */}
-          <div className="space-y-1">
-            <span className="text-[10px] text-muted-foreground">位置</span>
-            <Select
-              value={overlay.position}
-              onValueChange={(value: OverlayPosition) =>
-                dispatch({
-                  type: "UPDATE_OVERLAY",
-                  slideIndex: currentSlide,
-                  overlayId: overlay.id,
-                  updates: { position: value },
-                })
-              }
-            >
-              <SelectTrigger className="h-7 text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {positionOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Custom position sliders */}
-          {overlay.position === "custom" && (
-            <div className="space-y-2">
-              <div className="space-y-1">
-                <div className="flex justify-between text-[10px]">
-                  <span className="text-muted-foreground">X</span>
-                  <span className="font-mono">{overlay.customPosition?.x ?? 50}%</span>
-                </div>
-                <Slider
-                  value={[overlay.customPosition?.x ?? 50]}
-                  min={0}
-                  max={100}
-                  step={1}
-                  onValueChange={([x]) =>
-                    dispatch({
-                      type: "UPDATE_OVERLAY",
-                      slideIndex: currentSlide,
-                      overlayId: overlay.id,
-                      updates: {
-                        customPosition: { x, y: overlay.customPosition?.y ?? 50 },
-                      },
-                    })
-                  }
-                />
-              </div>
-              <div className="space-y-1">
-                <div className="flex justify-between text-[10px]">
-                  <span className="text-muted-foreground">Y</span>
-                  <span className="font-mono">{overlay.customPosition?.y ?? 50}%</span>
-                </div>
-                <Slider
-                  value={[overlay.customPosition?.y ?? 50]}
-                  min={0}
-                  max={100}
-                  step={1}
-                  onValueChange={([y]) =>
-                    dispatch({
-                      type: "UPDATE_OVERLAY",
-                      slideIndex: currentSlide,
-                      overlayId: overlay.id,
-                      updates: {
-                        customPosition: { x: overlay.customPosition?.x ?? 50, y },
-                      },
-                    })
-                  }
-                />
-              </div>
+        return (
+          <div key={overlay.id} className="rounded-lg bg-ls-surface-2 p-3 space-y-3">
+            {/* Header */}
+            <div className="flex items-center gap-2">
+              <GripVertical className="w-3 h-3 text-ls-text-dim flex-shrink-0" />
+              <span className={cn(
+                "text-[9px] font-mono px-1.5 py-0.5 rounded",
+                isImage ? "bg-purple-500/20 text-purple-300" : "bg-primary/20 text-primary"
+              )}>
+                {isImage ? "圖片" : "文字"}
+              </span>
+              <span className="text-[11px] text-muted-foreground truncate flex-1">
+                {isImage
+                  ? (overlay.text || overlay.imageSrc?.split("/").pop()?.slice(0, 20) || "圖片")
+                  : (overlay.text.replace(/<[^>]+>/g, "").slice(0, 20) || "（無文字）")}
+              </span>
+              <Switch
+                checked={overlay.visible}
+                onCheckedChange={(visible) =>
+                  dispatch({
+                    type: "SET_OVERLAY_VISIBILITY",
+                    slideIndex: currentSlide,
+                    overlayId: overlay.id,
+                    visible,
+                  })
+                }
+              />
+              <button
+                onClick={() => handleDeleteOverlay(overlay.id)}
+                className="p-1 rounded hover:bg-destructive/10 text-ls-text-dim hover:text-destructive transition-colors"
+                title="刪除"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
             </div>
-          )}
 
-          {/* Animation */}
-          <div className="space-y-1">
-            <span className="text-[10px] text-muted-foreground">動畫</span>
-            <Select
-              value={overlay.animation}
-              onValueChange={(value: OverlayAnimation) =>
-                dispatch({
-                  type: "UPDATE_OVERLAY",
-                  slideIndex: currentSlide,
-                  overlayId: overlay.id,
-                  updates: { animation: value },
-                })
-              }
-            >
-              <SelectTrigger className="h-7 text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {animationOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+            {/* Image-specific controls */}
+            {isImage && (
+              <>
+                {/* Preview */}
+                {overlay.imageSrc && (
+                  <div className="rounded-md overflow-hidden bg-ls-surface-1 p-1">
+                    <img
+                      src={overlay.imageSrc}
+                      alt=""
+                      className="w-full h-20 object-contain"
+                    />
+                  </div>
+                )}
 
-          {/* Font size */}
-          <div className="space-y-1">
-            <span className="text-[10px] text-muted-foreground">字體大小</span>
-            <Input
-              value={overlay.style?.fontSize ?? "2rem"}
-              onChange={(e) =>
-                dispatch({
-                  type: "UPDATE_OVERLAY",
-                  slideIndex: currentSlide,
-                  overlayId: overlay.id,
-                  updates: { style: { ...overlay.style, fontSize: e.target.value } },
-                })
-              }
-              className="h-7 text-xs font-mono bg-ls-surface-1"
-            />
-          </div>
+                {/* Image URL */}
+                <div className="space-y-1">
+                  <span className="text-[10px] text-muted-foreground">圖片網址</span>
+                  <Input
+                    value={overlay.imageSrc ?? ""}
+                    onChange={(e) =>
+                      dispatch({
+                        type: "UPDATE_OVERLAY",
+                        slideIndex: currentSlide,
+                        overlayId: overlay.id,
+                        updates: { imageSrc: e.target.value },
+                      })
+                    }
+                    className="h-7 text-xs font-mono bg-ls-surface-1"
+                    placeholder="https://..."
+                  />
+                </div>
 
-          {/* Color */}
-          <div className="space-y-1">
-            <span className="text-[10px] text-muted-foreground">文字顏色</span>
-            <Input
-              value={overlay.style?.color ?? "hsl(210, 20%, 92%)"}
-              onChange={(e) =>
-                dispatch({
-                  type: "UPDATE_OVERLAY",
-                  slideIndex: currentSlide,
-                  overlayId: overlay.id,
-                  updates: { style: { ...overlay.style, color: e.target.value } },
-                })
-              }
-              className="h-7 text-xs font-mono bg-ls-surface-1"
-            />
+                {/* Width */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[10px]">
+                    <span className="text-muted-foreground">寬度</span>
+                    <span className="font-mono">{overlay.imageWidth ?? 400}px</span>
+                  </div>
+                  <Slider
+                    value={[overlay.imageWidth ?? 400]}
+                    min={50}
+                    max={1200}
+                    step={10}
+                    onValueChange={([w]) =>
+                      dispatch({
+                        type: "UPDATE_OVERLAY",
+                        slideIndex: currentSlide,
+                        overlayId: overlay.id,
+                        updates: { imageWidth: w },
+                      })
+                    }
+                  />
+                </div>
+
+                {/* Opacity */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[10px]">
+                    <span className="text-muted-foreground">透明度</span>
+                    <span className="font-mono">{((overlay.imageOpacity ?? 1) * 100).toFixed(0)}%</span>
+                  </div>
+                  <Slider
+                    value={[(overlay.imageOpacity ?? 1) * 100]}
+                    min={10}
+                    max={100}
+                    step={5}
+                    onValueChange={([v]) =>
+                      dispatch({
+                        type: "UPDATE_OVERLAY",
+                        slideIndex: currentSlide,
+                        overlayId: overlay.id,
+                        updates: { imageOpacity: v / 100 },
+                      })
+                    }
+                  />
+                </div>
+
+                {/* Border radius */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[10px]">
+                    <span className="text-muted-foreground">圓角</span>
+                    <span className="font-mono">{overlay.imageBorderRadius ?? 0}px</span>
+                  </div>
+                  <Slider
+                    value={[overlay.imageBorderRadius ?? 0]}
+                    min={0}
+                    max={100}
+                    step={4}
+                    onValueChange={([r]) =>
+                      dispatch({
+                        type: "UPDATE_OVERLAY",
+                        slideIndex: currentSlide,
+                        overlayId: overlay.id,
+                        updates: { imageBorderRadius: r },
+                      })
+                    }
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Text-specific controls */}
+            {!isImage && (
+              <div className="space-y-1">
+                <span className="text-[10px] text-muted-foreground">文字內容 (HTML)</span>
+                <Textarea
+                  value={overlay.text}
+                  onChange={(e) =>
+                    dispatch({
+                      type: "UPDATE_OVERLAY",
+                      slideIndex: currentSlide,
+                      overlayId: overlay.id,
+                      updates: { text: e.target.value },
+                    })
+                  }
+                  className="text-xs font-mono bg-ls-surface-1 min-h-[60px] resize-none"
+                  placeholder="輸入文字或 HTML..."
+                />
+              </div>
+            )}
+
+            {/* Shared controls: Position */}
+            <div className="space-y-1">
+              <span className="text-[10px] text-muted-foreground">位置</span>
+              <Select
+                value={overlay.position}
+                onValueChange={(value: OverlayPosition) =>
+                  dispatch({
+                    type: "UPDATE_OVERLAY",
+                    slideIndex: currentSlide,
+                    overlayId: overlay.id,
+                    updates: { position: value },
+                  })
+                }
+              >
+                <SelectTrigger className="h-7 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {positionOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Custom position sliders */}
+            {overlay.position === "custom" && (
+              <div className="space-y-2">
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[10px]">
+                    <span className="text-muted-foreground">X</span>
+                    <span className="font-mono">{overlay.customPosition?.x ?? 50}%</span>
+                  </div>
+                  <Slider
+                    value={[overlay.customPosition?.x ?? 50]}
+                    min={0} max={100} step={1}
+                    onValueChange={([x]) =>
+                      dispatch({
+                        type: "UPDATE_OVERLAY",
+                        slideIndex: currentSlide,
+                        overlayId: overlay.id,
+                        updates: { customPosition: { x, y: overlay.customPosition?.y ?? 50 } },
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[10px]">
+                    <span className="text-muted-foreground">Y</span>
+                    <span className="font-mono">{overlay.customPosition?.y ?? 50}%</span>
+                  </div>
+                  <Slider
+                    value={[overlay.customPosition?.y ?? 50]}
+                    min={0} max={100} step={1}
+                    onValueChange={([y]) =>
+                      dispatch({
+                        type: "UPDATE_OVERLAY",
+                        slideIndex: currentSlide,
+                        overlayId: overlay.id,
+                        updates: { customPosition: { x: overlay.customPosition?.x ?? 50, y } },
+                      })
+                    }
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Animation */}
+            <div className="space-y-1">
+              <span className="text-[10px] text-muted-foreground">動畫</span>
+              <Select
+                value={overlay.animation}
+                onValueChange={(value: OverlayAnimation) =>
+                  dispatch({
+                    type: "UPDATE_OVERLAY",
+                    slideIndex: currentSlide,
+                    overlayId: overlay.id,
+                    updates: { animation: value },
+                  })
+                }
+              >
+                <SelectTrigger className="h-7 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {animationOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Text-only: font size + color */}
+            {!isImage && (
+              <>
+                <div className="space-y-1">
+                  <span className="text-[10px] text-muted-foreground">字體大小</span>
+                  <Input
+                    value={overlay.style?.fontSize ?? "2rem"}
+                    onChange={(e) =>
+                      dispatch({
+                        type: "UPDATE_OVERLAY",
+                        slideIndex: currentSlide,
+                        overlayId: overlay.id,
+                        updates: { style: { ...overlay.style, fontSize: e.target.value } },
+                      })
+                    }
+                    className="h-7 text-xs font-mono bg-ls-surface-1"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[10px] text-muted-foreground">文字顏色</span>
+                  <Input
+                    value={overlay.style?.color ?? "hsl(210, 20%, 92%)"}
+                    onChange={(e) =>
+                      dispatch({
+                        type: "UPDATE_OVERLAY",
+                        slideIndex: currentSlide,
+                        overlayId: overlay.id,
+                        updates: { style: { ...overlay.style, color: e.target.value } },
+                      })
+                    }
+                    className="h-7 text-xs font-mono bg-ls-surface-1"
+                  />
+                </div>
+              </>
+            )}
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       {overlays.length > 0 && (
         <p className="text-[10px] text-ls-text-dim">
-          Tip: 開啟控制面板後，可以在畫面上直接拖曳文字區塊定位，或點擊文字開啟浮動工具列。
+          Tip：開啟控制面板後，可以在畫面上直接拖曳覆蓋層定位。
         </p>
       )}
     </div>

@@ -296,7 +296,22 @@ const OverlayLayer = ({ overlays, editMode = false, onSelectOverlay }: OverlayLa
               }}
               onMouseDown={(e) => handleMouseDown(e, overlay)}
             >
-              {overlay.animation === "typewriter" ? (
+              {(overlay.type === "image" && overlay.imageSrc) ? (
+                <img
+                  src={overlay.imageSrc}
+                  alt=""
+                  draggable={false}
+                  style={{
+                    width: overlay.imageWidth ? `${overlay.imageWidth}px` : "auto",
+                    height: overlay.imageHeight ? `${overlay.imageHeight}px` : "auto",
+                    maxWidth: "90vw",
+                    maxHeight: "70vh",
+                    objectFit: "contain",
+                    opacity: overlay.imageOpacity ?? 1,
+                    borderRadius: overlay.imageBorderRadius ? `${overlay.imageBorderRadius}px` : undefined,
+                  }}
+                />
+              ) : overlay.animation === "typewriter" ? (
                 <TypewriterText html={overlay.text} />
               ) : (
                 <span dangerouslySetInnerHTML={{ __html: overlay.text }} />

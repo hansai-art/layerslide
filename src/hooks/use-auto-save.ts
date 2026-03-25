@@ -3,7 +3,7 @@ import type { EngineState } from "@/components/engine/state/engine-reducer";
 import type { BackgroundConfig, SlideConfig, TransitionType } from "@/types/layerslide";
 
 const STORAGE_KEY = "ls-auto-save";
-const SAVE_VERSION = 2; // Bump to invalidate old saves
+const SAVE_VERSION = 3; // Bump: added image overlays // Bump to invalidate old saves
 const DEBOUNCE_MS = 1000;
 
 interface AutoSaveData {
