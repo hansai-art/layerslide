@@ -82,6 +82,7 @@ const SlideFilmstrip = ({ onOpenPresenter }: SlideFilmstripProps) => {
       <div
         className="fixed bottom-0 left-0 right-0 bg-ls-surface-0/90 backdrop-blur-md border-t border-border"
         style={{ zIndex: 5 }}
+        data-tour="filmstrip"
       >
         {/* Toolbar row */}
         <div className="flex items-center justify-between h-9 px-3 border-b border-border/50">

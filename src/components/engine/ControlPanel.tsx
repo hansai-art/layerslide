@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Layers, Image, Type, Navigation, Settings, ChevronLeft, ChevronRight } from "lucide-react";
 import type { ControlPanelTab } from "@/types/layerslide";
 import { useEngine } from "@/hooks/use-engine";
@@ -22,8 +21,8 @@ const tabs: { id: ControlPanelTab; label: string; icon: typeof Layers }[] = [
 
 /** Control Panel: Side panel for real-time control (P key toggle) */
 const ControlPanel = ({ isOpen, onToggle }: ControlPanelProps) => {
-  const { state } = useEngine();
-  const [activeTab, setActiveTab] = useState<ControlPanelTab>("background");
+  const { state, dispatch } = useEngine();
+  const activeTab = state.panelTab;
 
   return (
     <>
@@ -37,6 +36,7 @@ const ControlPanel = ({ isOpen, onToggle }: ControlPanelProps) => {
           "text-xs font-mono",
           isOpen ? "right-[calc(320px+1rem)]" : "right-4"
         )}
+        data-tour="panel-toggle"
       >
         {isOpen ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
         <span>P</span>
@@ -50,6 +50,7 @@ const ControlPanel = ({ isOpen, onToggle }: ControlPanelProps) => {
           "transition-transform duration-300 ease-out",
           isOpen ? "translate-x-0" : "translate-x-full"
         )}
+        data-tour="control-panel"
       >
         {/* Header */}
         <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
@@ -65,7 +66,7 @@ const ControlPanel = ({ isOpen, onToggle }: ControlPanelProps) => {
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => dispatch({ type: "SET_PANEL_TAB", tab: tab.id })}
               className={cn(
                 "flex-1 flex flex-col items-center gap-1 py-3 text-[10px] font-medium transition-colors",
                 activeTab === tab.id

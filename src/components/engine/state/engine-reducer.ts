@@ -1,4 +1,4 @@
-import type { BackgroundConfig, TextOverlay, SlideConfig, TransitionType } from "@/types/layerslide";
+import type { BackgroundConfig, TextOverlay, SlideConfig, TransitionType, ControlPanelTab } from "@/types/layerslide";
 
 // ===== Engine State =====
 
@@ -8,6 +8,7 @@ export interface EngineState {
   background: BackgroundConfig;
   transition: TransitionType;
   panelOpen: boolean;
+  panelTab: ControlPanelTab;
   isPresenting: boolean;
   fps: number;
   autoDegrade: boolean;
@@ -43,7 +44,8 @@ export type EngineAction =
   | { type: "DUPLICATE_SLIDE"; index: number }
   | { type: "REORDER_SLIDE"; from: number; to: number }
   | { type: "UPDATE_SLIDE_NOTES"; slideIndex: number; notes: string }
-  | { type: "SET_TRANSITION"; transition: TransitionType };
+  | { type: "SET_TRANSITION"; transition: TransitionType }
+  | { type: "SET_PANEL_TAB"; tab: ControlPanelTab };
 
 const MAX_HISTORY = 50;
 
@@ -53,6 +55,7 @@ const EPHEMERAL_ACTIONS = new Set([
   "SET_PRESENTING",
   "TOGGLE_PANEL",
   "SET_PANEL_OPEN",
+  "SET_PANEL_TAB",
 ]);
 
 export function createInitialState(
@@ -66,6 +69,7 @@ export function createInitialState(
     background,
     transition: transition ?? "fade",
     panelOpen: false,
+    panelTab: "background",
     isPresenting: true,
     fps: 60,
     autoDegrade: true,
@@ -259,6 +263,9 @@ function engineReducer(state: EngineState, action: EngineAction): EngineState {
 
     case "SET_TRANSITION":
       return { ...state, transition: action.transition };
+
+    case "SET_PANEL_TAB":
+      return { ...state, panelTab: action.tab };
 
     default:
       return state;
