@@ -1,4 +1,4 @@
-import { Layers, Image, Type, Navigation, Settings, ChevronLeft, ChevronRight } from "lucide-react";
+import { Layers, Image, Type, Navigation, Settings, Timer, ChevronLeft, ChevronRight } from "lucide-react";
 import type { ControlPanelTab } from "@/types/layerslide";
 import { useEngine } from "@/hooks/use-engine";
 import { cn } from "@/lib/utils";
@@ -6,6 +6,7 @@ import BackgroundPanel from "./panels/background-panel";
 import TextPanel from "./panels/text-panel";
 import NavigationPanel from "./panels/navigation-panel";
 import SettingsPanel from "./panels/settings-panel";
+import TimelinePanel from "./panels/timeline-panel";
 
 interface ControlPanelProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ interface ControlPanelProps {
 const tabs: { id: ControlPanelTab; label: string; icon: typeof Layers }[] = [
   { id: "background", label: "背景", icon: Image },
   { id: "text", label: "文字", icon: Type },
+  { id: "animation", label: "時間軸", icon: Timer },
   { id: "navigation", label: "導航", icon: Navigation },
   { id: "settings", label: "設定", icon: Settings },
 ];
@@ -68,13 +70,13 @@ const ControlPanel = ({ isOpen, onToggle }: ControlPanelProps) => {
               key={tab.id}
               onClick={() => dispatch({ type: "SET_PANEL_TAB", tab: tab.id })}
               className={cn(
-                "flex-1 flex flex-col items-center gap-1 py-3 text-[10px] font-medium transition-colors",
+                "flex-1 flex flex-col items-center gap-1 py-2.5 text-[9px] font-medium transition-colors",
                 activeTab === tab.id
                   ? "text-primary border-b-2 border-primary"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <tab.icon className="w-4 h-4" />
+              <tab.icon className="w-3.5 h-3.5" />
               {tab.label}
             </button>
           ))}
@@ -84,6 +86,7 @@ const ControlPanel = ({ isOpen, onToggle }: ControlPanelProps) => {
         <div className="p-4 overflow-y-auto h-[calc(100%-120px)]">
           {activeTab === "background" && <BackgroundPanel />}
           {activeTab === "text" && <TextPanel />}
+          {activeTab === "animation" && <TimelinePanel />}
           {activeTab === "navigation" && <NavigationPanel />}
           {activeTab === "settings" && <SettingsPanel />}
         </div>

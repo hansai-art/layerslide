@@ -66,6 +66,9 @@ export interface TextOverlay {
   imageBorderRadius?: number; // px
   customPosition?: { x: number; y: number };
   visible: boolean;
+  // Animation timing
+  delay?: number;    // ms before animation starts (default 0)
+  duration?: number;  // ms animation duration (default 500)
 }
 
 // ===== Slide Types =====

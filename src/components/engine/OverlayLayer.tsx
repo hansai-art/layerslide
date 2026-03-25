@@ -274,7 +274,12 @@ const OverlayLayer = ({ overlays, editMode = false, onSelectOverlay }: OverlayLa
                 ? (animationClasses[overlay.animation] ?? "")
                 : ""
             )}
-            style={getPositionStyle(overlay)}
+            style={{
+              ...getPositionStyle(overlay),
+              animationDelay: overlay.delay ? `${overlay.delay}ms` : undefined,
+              animationDuration: overlay.duration ? `${overlay.duration}ms` : undefined,
+              animationFillMode: overlay.delay ? "backwards" : undefined,
+            }}
           >
             <div
               className={cn(
