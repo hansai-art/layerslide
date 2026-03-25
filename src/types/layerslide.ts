@@ -88,6 +88,10 @@ export interface ControlPanelState {
   activeTab: ControlPanelTab;
 }
 
+// ===== Transition Types =====
+
+export type TransitionType = "fade" | "slide-left" | "slide-up" | "zoom" | "none";
+
 // ===== Engine State =====
 
 export interface LayerSlideState {
@@ -98,4 +102,5 @@ export interface LayerSlideState {
   controlPanel: ControlPanelState;
   isPresenting: boolean;
   preset: PresetConfig | null;
+  transition?: TransitionType;
 }

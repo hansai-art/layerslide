@@ -1,6 +1,6 @@
 import { createContext, useReducer, type ReactNode, type Dispatch } from "react";
 import {
-  engineReducer,
+  undoableReducer,
   createInitialState,
   type EngineState,
   type EngineAction,
@@ -21,7 +21,7 @@ interface EngineProviderProps {
 }
 
 export const EngineProvider = ({ children, slides, background }: EngineProviderProps) => {
-  const [state, dispatch] = useReducer(engineReducer, createInitialState(slides, background));
+  const [state, dispatch] = useReducer(undoableReducer, createInitialState(slides, background));
 
   return (
     <EngineContext.Provider value={{ state, dispatch }}>

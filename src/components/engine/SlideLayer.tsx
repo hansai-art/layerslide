@@ -1,13 +1,15 @@
-import type { SlideConfig } from "@/types/layerslide";
+import type { SlideConfig, TransitionType } from "@/types/layerslide";
+import { getTransitionStyle } from "./slide-transition";
 
 interface SlideLayerProps {
   slides: SlideConfig[];
   currentSlide: number;
   onSlideChange: (index: number) => void;
+  transition?: TransitionType;
 }
 
-/** Layer 1 — Slide content (transparent background, sits between bg and overlay) */
-const SlideLayer = ({ slides, currentSlide, onSlideChange }: SlideLayerProps) => {
+/** Layer 1: Slide content with transition effects */
+const SlideLayer = ({ slides, currentSlide, onSlideChange, transition = "fade" }: SlideLayerProps) => {
   const goNext = () => onSlideChange(Math.min(currentSlide + 1, slides.length - 1));
   const goPrev = () => onSlideChange(Math.max(currentSlide - 1, 0));
 
@@ -15,18 +17,14 @@ const SlideLayer = ({ slides, currentSlide, onSlideChange }: SlideLayerProps) =>
     <div
       id="ls-slides"
       className="fixed inset-0 flex items-center justify-center"
-      style={{ zIndex: 1 }}
+      style={{ zIndex: 1, paddingBottom: 124 }}
     >
-      {/* Slide content area */}
       <div className="relative w-full h-full flex items-center justify-center">
         {slides.map((slide, index) => (
           <div
             key={slide.id}
-            className="absolute inset-0 flex items-center justify-center transition-opacity duration-500"
-            style={{
-              opacity: index === currentSlide ? 1 : 0,
-              pointerEvents: index === currentSlide ? "auto" : "none",
-            }}
+            className="flex items-center justify-center"
+            style={getTransitionStyle(index === currentSlide, transition)}
           >
             {slide.content && (
               <div
@@ -35,21 +33,6 @@ const SlideLayer = ({ slides, currentSlide, onSlideChange }: SlideLayerProps) =>
               />
             )}
           </div>
-        ))}
-      </div>
-
-      {/* Minimal navigation hints */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3">
-        {slides.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => onSlideChange(i)}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              i === currentSlide
-                ? "bg-primary w-6"
-                : "bg-muted-foreground/30 hover:bg-muted-foreground/60"
-            }`}
-          />
         ))}
       </div>
 
