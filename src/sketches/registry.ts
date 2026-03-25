@@ -7,6 +7,10 @@ import matrixRain from "./matrix-rain";
 import noiseTerrain from "./noise-terrain";
 import geometricMorph from "./geometric-morph";
 import fluidSim from "./fluid-sim";
+import auroraBorealis from "./aurora-borealis";
+import spiralGalaxy from "./spiral-galaxy";
+import rainRipples from "./rain-ripples";
+import shaderGradient from "./shader-gradient";
 
 const sketchRegistry: Record<string, SketchModule> = {
   "particle-network": particleNetwork,
@@ -17,6 +21,10 @@ const sketchRegistry: Record<string, SketchModule> = {
   "noise-terrain": noiseTerrain,
   "geometric-morph": geometricMorph,
   "fluid-sim": fluidSim,
+  "aurora-borealis": auroraBorealis,
+  "spiral-galaxy": spiralGalaxy,
+  "rain-ripples": rainRipples,
+  "shader-gradient": shaderGradient,
 };
 
 export function getSketch(name: string): SketchModule | undefined {

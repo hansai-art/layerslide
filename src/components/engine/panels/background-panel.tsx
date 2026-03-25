@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useEngine } from "@/hooks/use-engine";
 import { getSketch, getSketchNames } from "@/sketches/registry";
 import { Slider } from "@/components/ui/slider";
@@ -5,6 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import SketchParamsPanel from "./sketch-params-panel";
 import SketchPreview from "./sketch-preview";
+import SketchGallery from "./sketch-gallery";
 import type { BackgroundConfig } from "@/types/layerslide";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -16,6 +18,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 /** Interactive background control panel */
 const BackgroundPanel = () => {
   const { state, dispatch } = useEngine();
+  const [galleryOpen, setGalleryOpen] = useState(false);
   const sketchNames = getSketchNames();
 
   // Per-slide background override
@@ -127,6 +130,18 @@ const BackgroundPanel = () => {
           </button>
         ))}
       </div>
+      <button
+        onClick={() => setGalleryOpen(true)}
+        className="w-full rounded-lg border border-dashed border-border py-2 text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+      >
+        瀏覽全部動畫
+      </button>
+      <SketchGallery
+        open={galleryOpen}
+        onClose={() => setGalleryOpen(false)}
+        onSelect={(name) => dispatchSketch(name)}
+        activeSketch={activeBackground.sketch}
+      />
 
       {/* Opacity & Blur */}
       <SectionLabel>全域控制</SectionLabel>
