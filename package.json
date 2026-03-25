@@ -1,7 +1,10 @@
 {
-  "name": "vite_react_shadcn_ts",
-  "private": true,
-  "version": "0.0.0",
+  "name": "layerslide",
+  "private": false,
+  "version": "1.0.0",
+  "description": "Layer-based presentation system with persistent animated backgrounds",
+  "author": "Hans Lin / Group.G (hansai-art)",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",
