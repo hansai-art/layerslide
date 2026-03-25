@@ -66,7 +66,7 @@ const demoSlides: SlideConfig[] = [
     overlays: [
       {
         id: "features",
-        text: "<h2 style='font-size:2rem;font-weight:600;margin-bottom:1rem'>核心功能</h2><ul style='list-style:none;font-size:0.95rem;line-height:2.2;opacity:0.85'><li>⚡ 背景切換零中斷 — 影片、Canvas、生成式動畫</li><li>✏️ 即時文字編輯 — 簡報中隨時修改內容</li><li>🎛️ 控制台面板 — F9 呼出，即時調控所有參數</li><li>📦 離線優先 — 靜態 HTML，雙擊即可運行</li><li>🎨 生成式動畫引擎 — 內建 Sketch 庫，零素材需求</li></ul>",
+        text: "<h2 style='font-size:2rem;font-weight:600;margin-bottom:1rem'>核心功能</h2><ul style='list-style:none;font-size:0.95rem;line-height:2.2;opacity:0.85'><li>⚡ 背景切換零中斷 — 影片、Canvas、生成式動畫</li><li>✏️ 即時文字編輯 — 簡報中隨時修改內容</li><li>🎛️ 控制台面板 — 按 P 呼出，即時調控所有參數</li><li>📦 離線優先 — 靜態 HTML，雙擊即可運行</li><li>🎨 生成式動畫引擎 — 內建 Sketch 庫，零素材需求</li></ul>",
         position: "center",
         animation: "fadeIn",
         visible: true,
@@ -82,7 +82,7 @@ const demoSlides: SlideConfig[] = [
     overlays: [
       {
         id: "cta",
-        text: "<p style='font-size:1rem;opacity:0.5;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.5rem'>按 F9 開啟控制面板</p><h2 style='font-size:2.5rem;font-weight:700'>開始探索</h2><p style='font-size:0.9rem;opacity:0.5;margin-top:0.5rem'>← → 方向鍵切換投影片</p>",
+        text: "<p style='font-size:1rem;opacity:0.5;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.5rem'>按 P 開啟控制面板</p><h2 style='font-size:2.5rem;font-weight:700'>開始探索</h2><p style='font-size:0.9rem;opacity:0.5;margin-top:0.5rem'>← → 方向鍵切換投影片</p>",
         position: "center",
         animation: "fadeIn",
         visible: true,

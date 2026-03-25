@@ -51,7 +51,7 @@
       "overlays": [
         {
           "id": "features",
-          "text": "<h2 style='font-size:2rem;font-weight:600;margin-bottom:1rem'>核心功能</h2><ul style='list-style:none;font-size:0.95rem;line-height:2.2;opacity:0.85'><li>背景切換零中斷</li><li>即時文字編輯</li><li>控制台面板 F9</li><li>生成式動畫引擎</li></ul>",
+          "text": "<h2 style='font-size:2rem;font-weight:600;margin-bottom:1rem'>核心功能</h2><ul style='list-style:none;font-size:0.95rem;line-height:2.2;opacity:0.85'><li>背景切換零中斷</li><li>即時文字編輯</li><li>控制台面板 P</li><li>生成式動畫引擎</li></ul>",
           "position": "center",
           "animation": "fadeIn",
           "visible": true,
@@ -67,7 +67,7 @@
       "overlays": [
         {
           "id": "cta",
-          "text": "<h2 style='font-size:2.5rem;font-weight:700'>開始探索</h2><p style='font-size:0.9rem;opacity:0.5;margin-top:0.5rem'>F9 開啟控制面板 | 方向鍵切換投影片</p>",
+          "text": "<h2 style='font-size:2.5rem;font-weight:700'>開始探索</h2><p style='font-size:0.9rem;opacity:0.5;margin-top:0.5rem'>P 開啟控制面板 | 方向鍵切換投影片</p>",
           "position": "center",
           "animation": "fadeIn",
           "visible": true,

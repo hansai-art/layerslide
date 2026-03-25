@@ -20,7 +20,7 @@ const tabs: { id: ControlPanelTab; label: string; icon: typeof Layers }[] = [
   { id: "settings", label: "設定", icon: Settings },
 ];
 
-/** Control Panel: Side panel for real-time control (F9 toggle) */
+/** Control Panel: Side panel for real-time control (P key toggle) */
 const ControlPanel = ({ isOpen, onToggle }: ControlPanelProps) => {
   const { state } = useEngine();
   const [activeTab, setActiveTab] = useState<ControlPanelTab>("background");
@@ -39,7 +39,7 @@ const ControlPanel = ({ isOpen, onToggle }: ControlPanelProps) => {
         )}
       >
         {isOpen ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
-        <span>F9</span>
+        <span>P</span>
       </button>
 
       {/* Panel */}

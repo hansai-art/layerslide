@@ -8,6 +8,7 @@ import BackgroundLayer from "./BackgroundLayer";
 import SlideLayer from "./SlideLayer";
 import OverlayLayer from "./OverlayLayer";
 import ControlPanel from "./ControlPanel";
+import OnboardingTutorial from "./onboarding-tutorial";
 
 interface PresentationEngineProps {
   slides: SlideConfig[];
@@ -32,10 +33,8 @@ const EngineInner = () => {
 
       if (fps < 30) {
         lowFpsCountRef.current++;
-        // Degrade after 3 consecutive low FPS readings
         if (lowFpsCountRef.current >= 3 && !degradedRef.current) {
           degradedRef.current = true;
-          // Reduce particle count by half
           const currentCount = (state.background.params?.particleCount as number) ?? 80;
           if (currentCount > 20) {
             dispatch({
@@ -54,15 +53,18 @@ const EngineInner = () => {
 
   useFpsMonitor({ onFpsUpdate: handleFpsUpdate });
 
-  // Pause animations when tab is hidden
   useVisibilityPause(
     useCallback(() => dispatch({ type: "SET_PRESENTING", presenting: false }), [dispatch]),
     useCallback(() => dispatch({ type: "SET_PRESENTING", presenting: true }), [dispatch])
   );
 
-  // Keyboard shortcuts
+  // Keyboard shortcuts: P = toggle panel, arrows = navigate
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      // Ignore shortcuts when typing in inputs
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+
       switch (e.key) {
         case "ArrowRight":
         case " ":
@@ -73,7 +75,8 @@ const EngineInner = () => {
           e.preventDefault();
           dispatch({ type: "PREV_SLIDE" });
           break;
-        case "F9":
+        case "p":
+        case "P":
           e.preventDefault();
           dispatch({ type: "TOGGLE_PANEL" });
           break;
@@ -100,6 +103,7 @@ const EngineInner = () => {
         isOpen={panelOpen}
         onToggle={() => dispatch({ type: "TOGGLE_PANEL" })}
       />
+      <OnboardingTutorial />
     </div>
   );
 };

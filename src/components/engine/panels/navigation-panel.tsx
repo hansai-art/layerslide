@@ -95,7 +95,7 @@ const NavigationPanel = () => {
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">控制面板</span>
-          <span className="font-mono text-foreground">F9</span>
+          <span className="font-mono text-foreground">P</span>
         </div>
       </div>
     </div>
