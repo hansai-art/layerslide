@@ -288,17 +288,21 @@ const OverlayLayer = ({ overlays, editMode = false, onSelectOverlay }: OverlayLa
                   ? "pointer-events-auto cursor-move border border-dashed border-white/30 rounded-lg hover:border-white/60"
                   : "pointer-events-auto"
               )}
-              style={{
-                fontSize: overlay.style?.fontSize ?? "2rem",
-                fontFamily: overlay.style?.fontFamily,
-                color: overlay.style?.color ?? "hsl(var(--foreground))",
-                backgroundColor: overlay.style?.backgroundColor,
-                textShadow:
-                  overlay.style?.textShadow ??
-                  "0 2px 20px rgba(0,0,0,0.6), 0 0 40px rgba(0,0,0,0.3)",
-                padding: overlay.style?.padding ?? "1rem 2rem",
-                borderRadius: "var(--radius)",
-              }}
+              style={
+                overlay.type === "image"
+                  ? { padding: "0.5rem", borderRadius: "var(--radius)" }
+                  : {
+                      fontSize: overlay.style?.fontSize ?? "2rem",
+                      fontFamily: overlay.style?.fontFamily,
+                      color: overlay.style?.color ?? "hsl(var(--foreground))",
+                      backgroundColor: overlay.style?.backgroundColor,
+                      textShadow:
+                        overlay.style?.textShadow ??
+                        "0 2px 20px rgba(0,0,0,0.6), 0 0 40px rgba(0,0,0,0.3)",
+                      padding: overlay.style?.padding ?? "1rem 2rem",
+                      borderRadius: "var(--radius)",
+                    }
+              }
               onMouseDown={(e) => handleMouseDown(e, overlay)}
             >
               {(overlay.type === "image" && overlay.imageSrc) ? (

@@ -16,7 +16,7 @@ LayerSlide 採用獨立的三層渲染，每層互不干擾：
 |------|------|------|
 | **Layer 0 背景層** | 持續播放的生成式動畫，切換投影片時不中斷 | Canvas 2D |
 | **Layer 1 投影片層** | 透明背景的投影片內容，支援 5 種轉場效果 | React DOM |
-| **Layer 2 覆蓋層** | 即時可編輯的文字覆蓋，支援拖曳定位 | React DOM |
+| **Layer 2 覆蓋層** | 文字 + 圖片覆蓋，支援拖曳定位、動畫時間軸 | React DOM |
 
 ### 8 種內建動畫背景
 
@@ -31,35 +31,46 @@ LayerSlide 採用獨立的三層渲染，每層互不干擾：
 - `geometric-morph` 幾何變形
 - `fluid-sim` 流體模擬
 
-每種動畫都有獨立的參數調整器（速度、顏色、數量等），可在控制面板中即時調整。
+每種動畫都有獨立的參數調整器（速度、顏色、數量等），帶有即時 Canvas 縮圖預覽。
 
 ### 專業編輯器
 
 - **底部縮圖列**：投影片縮圖，新增 / 複製 / 刪除按鈕（類似 Canva / Google Slides）
 - **浮動工具列**：點擊文字出現 WYSIWYG 工具列（粗體、斜體、底線、對齊、字體大小、色盤）
-- **拖曳定位**：開啟控制面板後，直接拖曳文字到任意位置
+- **圖片覆蓋層**：支援 URL 貼入或本地上傳，可調整寬度、透明度、圓角
+- **拖曳定位**：開啟控制面板後，直接拖曳文字或圖片到任意位置
+- **每頁獨立背景**：每張投影片可選擇不同的動畫背景
+- **動畫時間軸**：視覺化時間軸，控制每個覆蓋層的延遲和持續時間
 - **復原 / 重做**：50 層歷史記錄（Ctrl+Z / Ctrl+Y）
 - **自動儲存**：所有修改自動存到 localStorage，重開頁面不遺失
 
 ### 簡報者模式（F5）
 
-- 自動計時器（開始 / 暫停 / 重置）
-- 每張投影片的講者筆記
-- 下一張投影片預覽
+- 浮動工具列：計時器、講者筆記、下一張預覽（不遮擋背景）
 - 全螢幕切換
+
+### 匯出功能
+
+- **匯出 JSON**：儲存完整配置，可分享給他人匯入
+- **匯出獨立 HTML**：一鍵產生自包含的 HTML 檔案，雙擊即可播放（含鍵盤 + 觸控導航）
 
 ### 控制面板（P 鍵）
 
 | 分頁 | 功能 |
 |------|------|
-| 背景 | 切換 8 種動畫、調整參數、透明度、模糊度 |
-| 文字 | 新增 / 編輯 / 刪除文字區塊、位置、動畫、樣式 |
+| 背景 | 帶縮圖的 Sketch 選擇器、每頁獨立背景、參數調整、透明度、模糊度 |
+| 文字 | 新增文字 / 圖片覆蓋層、拖曳定位、樣式調整 |
+| 時間軸 | 視覺化動畫時間軸、延遲 / 持續時間控制 |
 | 導航 | 投影片列表、講者筆記編輯、快捷鍵速查 |
-| 設定 | 轉場動畫選擇、Preset 管理（JSON 匯出入）、自動降級開關 |
+| 設定 | 轉場動畫、Preset 管理（JSON / HTML 匯出入）、自動降級 |
+
+### 觸控支援
+
+手機 / 平板左滑下一張、右滑上一張（50px 閾值）。
 
 ### 新手教學
 
-首次開啟自動彈出 8 步互動教學，左下角 `?` 按鈕可隨時重新開啟。
+首次開啟自動彈出互動導覽，實際展示各功能區域並高亮目標 UI。左下角 `?` 按鈕可隨時重新開啟。
 
 ---
 
@@ -113,7 +124,7 @@ src/
 │   ├── PresentationEngine.tsx  # 主控制器
 │   ├── BackgroundLayer.tsx     # Layer 0：Canvas 動畫執行器
 │   ├── SlideLayer.tsx          # Layer 1：投影片轉場
-│   ├── OverlayLayer.tsx        # Layer 2：可拖曳文字覆蓋
+│   ├── OverlayLayer.tsx        # Layer 2：可拖曳文字 + 圖片覆蓋
 │   ├── ControlPanel.tsx        # 側邊控制面板（P 鍵）
 │   ├── slide-filmstrip.tsx     # 底部縮圖列
 │   ├── floating-toolbar.tsx    # 浮動文字工具列
@@ -121,15 +132,18 @@ src/
 │   ├── onboarding-tutorial.tsx # 新手教學
 │   ├── slide-transition.tsx    # 轉場效果
 │   ├── preset-manager.ts       # JSON 預設組合管理
+│   ├── html-exporter.ts        # 獨立 HTML 匯出
 │   ├── background-manager.ts   # 背景 Crossfade
 │   ├── state/
 │   │   ├── engine-reducer.ts   # 狀態 + Actions + Undo/Redo
 │   │   └── engine-context.tsx  # React Context Provider
 │   └── panels/
 │       ├── background-panel.tsx    # 背景控制面板
-│       ├── text-panel.tsx          # 文字編輯面板
+│       ├── text-panel.tsx          # 文字 + 圖片編輯面板
+│       ├── timeline-panel.tsx      # 動畫時間軸面板
 │       ├── navigation-panel.tsx    # 導航 + 筆記面板
 │       ├── settings-panel.tsx      # 設定面板
+│       ├── sketch-preview.tsx      # Sketch 即時縮圖預覽
 │       └── sketch-params-panel.tsx # Sketch 參數自動 UI
 ├── sketches/                   # 8 個 Canvas 動畫模組
 │   ├── registry.ts             # 名稱 → 模組映射
@@ -146,6 +160,7 @@ src/
 │   ├── use-auto-save.ts        # localStorage 自動儲存
 │   ├── use-fps-monitor.ts      # FPS 監控 + 自動降級
 │   ├── use-fullscreen.ts       # 全螢幕 API
+│   ├── use-touch-navigation.ts # 觸控手勢導航
 │   └── use-visibility-pause.ts # 分頁隱藏時暫停動畫
 ├── types/
 │   └── layerslide.ts           # 所有 TypeScript 型別定義
