@@ -1,0 +1,51 @@
+{
+  "name": "極簡 Demo",
+  "description": "星空背景 + 兩張投影片的極簡展示",
+  "background": {
+    "type": "generator",
+    "sketch": "starfield",
+    "params": {
+      "starCount": 300,
+      "speed": 1.5,
+      "color": "200, 220, 255",
+      "maxDepth": 800,
+      "trailLength": 5
+    },
+    "opacity": 1,
+    "blur": 0
+  },
+  "slides": [
+    {
+      "id": "minimal-1",
+      "overlays": [
+        {
+          "id": "min-title",
+          "text": "<h1 style='font-size:4rem;font-weight:200;letter-spacing:0.1em'>極簡</h1>",
+          "position": "center",
+          "animation": "fadeIn",
+          "visible": true,
+          "style": {
+            "color": "hsl(210, 30%, 95%)",
+            "textShadow": "0 0 40px rgba(100,150,255,0.3)"
+          }
+        }
+      ]
+    },
+    {
+      "id": "minimal-2",
+      "overlays": [
+        {
+          "id": "min-end",
+          "text": "<p style='font-size:1.2rem;font-weight:300;opacity:0.8'>Less is more.</p>",
+          "position": "center",
+          "animation": "fadeIn",
+          "visible": true,
+          "style": {
+            "color": "hsl(210, 30%, 90%)",
+            "textShadow": "0 0 30px rgba(100,150,255,0.2)"
+          }
+        }
+      ]
+    }
+  ]
+}

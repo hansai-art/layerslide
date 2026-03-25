@@ -1,5 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
-import type { BackgroundConfig, TextOverlay, SlideConfig } from "@/types/layerslide";
+import { useEffect, useCallback, useRef } from "react";
+import type { BackgroundConfig, SlideConfig } from "@/types/layerslide";
+import { EngineProvider } from "./state/engine-context";
+import { useEngine } from "@/hooks/use-engine";
+import { useFpsMonitor } from "@/hooks/use-fps-monitor";
+import { useVisibilityPause } from "@/hooks/use-visibility-pause";
 import BackgroundLayer from "./BackgroundLayer";
 import SlideLayer from "./SlideLayer";
 import OverlayLayer from "./OverlayLayer";
@@ -8,16 +12,53 @@ import ControlPanel from "./ControlPanel";
 interface PresentationEngineProps {
   slides: SlideConfig[];
   background: BackgroundConfig;
-  initialOverlays?: TextOverlay[];
 }
 
-/** Main engine — orchestrates all three layers + control panel */
-const PresentationEngine = ({ slides, background, initialOverlays }: PresentationEngineProps) => {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [panelOpen, setPanelOpen] = useState(false);
+/** Inner component that consumes engine context */
+const EngineInner = () => {
+  const { state, dispatch } = useEngine();
+  const { currentSlide, slides, background, panelOpen, autoDegrade } = state;
+  const lowFpsCountRef = useRef(0);
+  const degradedRef = useRef(false);
 
-  // Get overlays for current slide
-  const activeOverlays = slides[currentSlide]?.overlays ?? initialOverlays ?? [];
+  const activeOverlays = slides[currentSlide]?.overlays ?? [];
+
+  // FPS monitoring with auto-degrade
+  const handleFpsUpdate = useCallback(
+    (fps: number) => {
+      dispatch({ type: "SET_FPS", fps });
+
+      if (!autoDegrade) return;
+
+      if (fps < 30) {
+        lowFpsCountRef.current++;
+        // Degrade after 3 consecutive low FPS readings
+        if (lowFpsCountRef.current >= 3 && !degradedRef.current) {
+          degradedRef.current = true;
+          // Reduce particle count by half
+          const currentCount = (state.background.params?.particleCount as number) ?? 80;
+          if (currentCount > 20) {
+            dispatch({
+              type: "UPDATE_BACKGROUND_PARAM",
+              key: "particleCount",
+              value: Math.max(20, Math.round(currentCount / 2)),
+            });
+          }
+        }
+      } else {
+        lowFpsCountRef.current = 0;
+      }
+    },
+    [dispatch, autoDegrade, state.background.params?.particleCount]
+  );
+
+  useFpsMonitor({ onFpsUpdate: handleFpsUpdate });
+
+  // Pause animations when tab is hidden
+  useVisibilityPause(
+    useCallback(() => dispatch({ type: "SET_PRESENTING", presenting: false }), [dispatch]),
+    useCallback(() => dispatch({ type: "SET_PRESENTING", presenting: true }), [dispatch])
+  );
 
   // Keyboard shortcuts
   const handleKeyDown = useCallback(
@@ -26,23 +67,19 @@ const PresentationEngine = ({ slides, background, initialOverlays }: Presentatio
         case "ArrowRight":
         case " ":
           e.preventDefault();
-          setCurrentSlide((s) => Math.min(s + 1, slides.length - 1));
+          dispatch({ type: "NEXT_SLIDE" });
           break;
         case "ArrowLeft":
           e.preventDefault();
-          setCurrentSlide((s) => Math.max(s - 1, 0));
+          dispatch({ type: "PREV_SLIDE" });
           break;
         case "F9":
           e.preventDefault();
-          setPanelOpen((p) => !p);
-          break;
-        case "t":
-        case "T":
-          // Toggle overlays visibility could go here
+          dispatch({ type: "TOGGLE_PANEL" });
           break;
       }
     },
-    [slides.length]
+    [dispatch]
   );
 
   useEffect(() => {
@@ -52,29 +89,27 @@ const PresentationEngine = ({ slides, background, initialOverlays }: Presentatio
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-ls-surface-0">
-      {/* Layer 0 — Persistent Background */}
       <BackgroundLayer config={background} />
-
-      {/* Layer 1 — Slides (transparent) */}
       <SlideLayer
         slides={slides}
         currentSlide={currentSlide}
-        onSlideChange={setCurrentSlide}
+        onSlideChange={(i) => dispatch({ type: "SET_SLIDE", index: i })}
       />
-
-      {/* Layer 2 — Text Overlay */}
       <OverlayLayer overlays={activeOverlays} />
-
-      {/* Control Layer — Side Panel */}
       <ControlPanel
         isOpen={panelOpen}
-        onToggle={() => setPanelOpen(!panelOpen)}
-        background={background}
-        overlays={activeOverlays}
-        currentSlide={currentSlide}
-        totalSlides={slides.length}
+        onToggle={() => dispatch({ type: "TOGGLE_PANEL" })}
       />
     </div>
+  );
+};
+
+/** Main engine: wraps everything in EngineProvider */
+const PresentationEngine = ({ slides, background }: PresentationEngineProps) => {
+  return (
+    <EngineProvider slides={slides} background={background}>
+      <EngineInner />
+    </EngineProvider>
   );
 };
 

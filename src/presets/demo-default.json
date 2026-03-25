@@ -1,0 +1,82 @@
+{
+  "name": "預設 Demo",
+  "description": "LayerSlide 預設展示，粒子網路背景 + 四張投影片",
+  "background": {
+    "type": "generator",
+    "sketch": "particle-network",
+    "params": {
+      "particleCount": 100,
+      "lineDistance": 140,
+      "color": "0, 210, 190",
+      "speed": 0.4
+    },
+    "opacity": 1,
+    "blur": 0
+  },
+  "slides": [
+    {
+      "id": "slide-1",
+      "overlays": [
+        {
+          "id": "title",
+          "text": "<h1 style='font-size:3.5rem;font-weight:700;letter-spacing:-0.02em;margin-bottom:0.5rem'>LayerSlide</h1><p style='font-size:1.1rem;opacity:0.7;font-weight:300'>層級式簡報系統</p>",
+          "position": "center",
+          "animation": "fadeIn",
+          "visible": true,
+          "style": {
+            "color": "hsl(210, 20%, 92%)",
+            "textShadow": "0 4px 30px rgba(0,0,0,0.5)"
+          }
+        }
+      ]
+    },
+    {
+      "id": "slide-2",
+      "overlays": [
+        {
+          "id": "arch-title",
+          "text": "<h2 style='font-size:2rem;font-weight:600'>三層架構</h2><p style='font-size:0.95rem;opacity:0.6'>背景層 → 投影片層 → 文字覆蓋層</p>",
+          "position": "center",
+          "animation": "fadeIn",
+          "visible": true,
+          "style": {
+            "color": "hsl(210, 20%, 92%)",
+            "textShadow": "0 2px 20px rgba(0,0,0,0.4)"
+          }
+        }
+      ]
+    },
+    {
+      "id": "slide-3",
+      "overlays": [
+        {
+          "id": "features",
+          "text": "<h2 style='font-size:2rem;font-weight:600;margin-bottom:1rem'>核心功能</h2><ul style='list-style:none;font-size:0.95rem;line-height:2.2;opacity:0.85'><li>背景切換零中斷</li><li>即時文字編輯</li><li>控制台面板 F9</li><li>生成式動畫引擎</li></ul>",
+          "position": "center",
+          "animation": "fadeIn",
+          "visible": true,
+          "style": {
+            "color": "hsl(210, 20%, 92%)",
+            "textShadow": "0 2px 20px rgba(0,0,0,0.4)"
+          }
+        }
+      ]
+    },
+    {
+      "id": "slide-4",
+      "overlays": [
+        {
+          "id": "cta",
+          "text": "<h2 style='font-size:2.5rem;font-weight:700'>開始探索</h2><p style='font-size:0.9rem;opacity:0.5;margin-top:0.5rem'>F9 開啟控制面板 | 方向鍵切換投影片</p>",
+          "position": "center",
+          "animation": "fadeIn",
+          "visible": true,
+          "style": {
+            "color": "hsl(210, 20%, 92%)",
+            "textShadow": "0 4px 30px rgba(0,0,0,0.5)"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from "react";
 import type { TextOverlay } from "@/types/layerslide";
 import { cn } from "@/lib/utils";
 
@@ -17,7 +18,65 @@ const animationClasses: Record<string, string> = {
   none: "",
 };
 
-/** Layer 2 — Real-time editable text overlay */
+/** Typewriter component: reveals text character by character */
+function TypewriterText({ html, speed = 30 }: { html: string; speed?: number }) {
+  const [displayLength, setDisplayLength] = useState(0);
+  const plainText = useRef(html.replace(/<[^>]+>/g, ""));
+  const intervalRef = useRef<ReturnType<typeof setInterval>>();
+
+  useEffect(() => {
+    plainText.current = html.replace(/<[^>]+>/g, "");
+    setDisplayLength(0);
+
+    intervalRef.current = setInterval(() => {
+      setDisplayLength((prev) => {
+        if (prev >= plainText.current.length) {
+          clearInterval(intervalRef.current);
+          return prev;
+        }
+        return prev + 1;
+      });
+    }, speed);
+
+    return () => clearInterval(intervalRef.current);
+  }, [html, speed]);
+
+  // Build visible HTML by counting visible chars
+  const visibleHtml = getVisibleHtml(html, displayLength);
+  const cursor = displayLength < plainText.current.length ? "▌" : "";
+
+  return (
+    <span dangerouslySetInnerHTML={{ __html: visibleHtml + cursor }} />
+  );
+}
+
+/** Truncate HTML to show only `maxChars` visible characters */
+function getVisibleHtml(html: string, maxChars: number): string {
+  let visible = 0;
+  let result = "";
+  let inTag = false;
+
+  for (let i = 0; i < html.length; i++) {
+    const ch = html[i];
+    if (ch === "<") {
+      inTag = true;
+      result += ch;
+    } else if (ch === ">") {
+      inTag = false;
+      result += ch;
+    } else if (inTag) {
+      result += ch;
+    } else {
+      if (visible < maxChars) {
+        result += ch;
+        visible++;
+      }
+    }
+  }
+  return result;
+}
+
+/** Layer 2: Real-time editable text overlay */
 const OverlayLayer = ({ overlays }: OverlayLayerProps) => {
   return (
     <div
@@ -33,7 +92,9 @@ const OverlayLayer = ({ overlays }: OverlayLayerProps) => {
             className={cn(
               "absolute inset-0 flex justify-center px-8",
               positionClasses[overlay.position] ?? "items-center",
-              animationClasses[overlay.animation] ?? ""
+              overlay.animation !== "typewriter"
+                ? (animationClasses[overlay.animation] ?? "")
+                : ""
             )}
             style={
               overlay.position === "custom" && overlay.customPosition
@@ -59,8 +120,13 @@ const OverlayLayer = ({ overlays }: OverlayLayerProps) => {
                 padding: overlay.style?.padding ?? "1rem 2rem",
                 borderRadius: "var(--radius)",
               }}
-              dangerouslySetInnerHTML={{ __html: overlay.text }}
-            />
+            >
+              {overlay.animation === "typewriter" ? (
+                <TypewriterText html={overlay.text} />
+              ) : (
+                <span dangerouslySetInnerHTML={{ __html: overlay.text }} />
+              )}
+            </div>
           </div>
         ))}
     </div>
