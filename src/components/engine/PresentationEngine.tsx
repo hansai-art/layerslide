@@ -22,7 +22,7 @@ interface PresentationEngineProps {
 /** Inner component that consumes engine context */
 const EngineInner = () => {
   const { state, dispatch } = useEngine();
-  const { currentSlide, slides, background, panelOpen, autoDegrade } = state;
+  const { currentSlide, slides, background, panelOpen, autoDegrade, transition } = state;
   const lowFpsCountRef = useRef(0);
   const degradedRef = useRef(false);
 
@@ -154,6 +154,7 @@ const EngineInner = () => {
         slides={slides}
         currentSlide={currentSlide}
         onSlideChange={(i) => dispatch({ type: "SET_SLIDE", index: i })}
+        transition={transition}
       />
       <OverlayLayer
         overlays={activeOverlays}

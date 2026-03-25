@@ -1,6 +1,7 @@
 import { useEngine } from "@/hooks/use-engine";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -8,10 +9,11 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Slide navigation panel with thumbnails and controls */
+/** Slide navigation panel with speaker notes */
 const NavigationPanel = () => {
   const { state, dispatch } = useEngine();
   const { currentSlide, slides } = state;
+  const currentNotes = slides[currentSlide]?.notes ?? "";
 
   return (
     <div className="space-y-4">
@@ -73,14 +75,29 @@ const NavigationPanel = () => {
                 {slide.overlays[0]?.text.replace(/<[^>]+>/g, "").slice(0, 40) || "（無文字）"}
               </span>
             </div>
-            {slide.overlays.length > 1 && (
-              <p className="text-[10px] text-ls-text-dim mt-1 ml-7">
-                {slide.overlays.length} 個文字區塊
+            {slide.notes && (
+              <p className="text-[10px] text-ls-text-dim mt-1 ml-7 truncate">
+                📝 {slide.notes.slice(0, 30)}
               </p>
             )}
           </button>
         ))}
       </div>
+
+      {/* Speaker notes */}
+      <SectionLabel>講者筆記</SectionLabel>
+      <Textarea
+        value={currentNotes}
+        onChange={(e) =>
+          dispatch({
+            type: "UPDATE_SLIDE_NOTES",
+            slideIndex: currentSlide,
+            notes: e.target.value,
+          })
+        }
+        placeholder="在此輸入講者筆記，簡報者模式 (F5) 會顯示..."
+        className="text-xs bg-ls-surface-2 border-border min-h-[80px] resize-none"
+      />
 
       {/* Keyboard shortcuts info */}
       <SectionLabel>快捷鍵</SectionLabel>
@@ -96,6 +113,18 @@ const NavigationPanel = () => {
         <div className="flex justify-between">
           <span className="text-muted-foreground">控制面板</span>
           <span className="font-mono text-foreground">P</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">簡報者模式</span>
+          <span className="font-mono text-foreground">F5</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">復原</span>
+          <span className="font-mono text-foreground">Ctrl+Z</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">重做</span>
+          <span className="font-mono text-foreground">Ctrl+Y</span>
         </div>
       </div>
     </div>

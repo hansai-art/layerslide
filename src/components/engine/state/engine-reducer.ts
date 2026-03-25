@@ -1,4 +1,4 @@
-import type { BackgroundConfig, TextOverlay, SlideConfig } from "@/types/layerslide";
+import type { BackgroundConfig, TextOverlay, SlideConfig, TransitionType } from "@/types/layerslide";
 
 // ===== Engine State =====
 
@@ -6,6 +6,7 @@ export interface EngineState {
   currentSlide: number;
   slides: SlideConfig[];
   background: BackgroundConfig;
+  transition: TransitionType;
   panelOpen: boolean;
   isPresenting: boolean;
   fps: number;
@@ -41,7 +42,8 @@ export type EngineAction =
   | { type: "DELETE_SLIDE"; index: number }
   | { type: "DUPLICATE_SLIDE"; index: number }
   | { type: "REORDER_SLIDE"; from: number; to: number }
-  | { type: "UPDATE_SLIDE_NOTES"; slideIndex: number; notes: string };
+  | { type: "UPDATE_SLIDE_NOTES"; slideIndex: number; notes: string }
+  | { type: "SET_TRANSITION"; transition: TransitionType };
 
 const MAX_HISTORY = 50;
 
@@ -61,6 +63,7 @@ export function createInitialState(
     currentSlide: 0,
     slides,
     background,
+    transition: "fade",
     panelOpen: false,
     isPresenting: true,
     fps: 60,
@@ -252,6 +255,9 @@ function engineReducer(state: EngineState, action: EngineAction): EngineState {
       });
       return { ...state, slides };
     }
+
+    case "SET_TRANSITION":
+      return { ...state, transition: action.transition };
 
     default:
       return state;

@@ -1,7 +1,8 @@
 import PresentationEngine from "@/components/engine/PresentationEngine";
 import type { BackgroundConfig, SlideConfig } from "@/types/layerslide";
+import { loadAutoSave } from "@/hooks/use-auto-save";
 
-// Demo background — particle network generator
+// Demo background
 const demoBackground: BackgroundConfig = {
   type: "generator",
   sketch: "particle-network",
@@ -32,6 +33,7 @@ const demoSlides: SlideConfig[] = [
         },
       },
     ],
+    notes: "歡迎介紹 LayerSlide 的核心理念：背景不中斷的簡報體驗。",
   },
   {
     id: "slide-2",
@@ -50,7 +52,7 @@ const demoSlides: SlideConfig[] = [
       },
       {
         id: "arch-detail",
-        text: "<div style='display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;font-size:0.85rem'><div style='background:rgba(0,210,190,0.1);border:1px solid rgba(0,210,190,0.2);border-radius:12px;padding:1.5rem;text-align:center'><div style='font-size:1.5rem;margin-bottom:0.5rem'>🎬</div><strong>背景層</strong><p style='opacity:0.6;margin-top:0.3rem'>持續播放的影片、動畫或生成式背景</p></div><div style='background:rgba(130,100,255,0.1);border:1px solid rgba(130,100,255,0.2);border-radius:12px;padding:1.5rem;text-align:center'><div style='font-size:1.5rem;margin-bottom:0.5rem'>📄</div><strong>投影片層</strong><p style='opacity:0.6;margin-top:0.3rem'>透明背景的 reveal.js 投影片內容</p></div><div style='background:rgba(255,200,50,0.1);border:1px solid rgba(255,200,50,0.2);border-radius:12px;padding:1.5rem;text-align:center'><div style='font-size:1.5rem;margin-bottom:0.5rem'>✏️</div><strong>覆蓋層</strong><p style='opacity:0.6;margin-top:0.3rem'>即時可編輯的文字與控制面板</p></div></div>",
+        text: "<div style='display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;font-size:0.85rem'><div style='background:rgba(0,210,190,0.1);border:1px solid rgba(0,210,190,0.2);border-radius:12px;padding:1.5rem;text-align:center'><div style='font-size:1.5rem;margin-bottom:0.5rem'>🎬</div><strong>背景層</strong><p style='opacity:0.6;margin-top:0.3rem'>持續播放的影片、動畫或生成式背景</p></div><div style='background:rgba(130,100,255,0.1);border:1px solid rgba(130,100,255,0.2);border-radius:12px;padding:1.5rem;text-align:center'><div style='font-size:1.5rem;margin-bottom:0.5rem'>📄</div><strong>投影片層</strong><p style='opacity:0.6;margin-top:0.3rem'>透明背景的投影片內容</p></div><div style='background:rgba(255,200,50,0.1);border:1px solid rgba(255,200,50,0.2);border-radius:12px;padding:1.5rem;text-align:center'><div style='font-size:1.5rem;margin-bottom:0.5rem'>✏️</div><strong>覆蓋層</strong><p style='opacity:0.6;margin-top:0.3rem'>即時可編輯的文字與控制面板</p></div></div>",
         position: "center",
         animation: "fadeIn",
         visible: true,
@@ -60,6 +62,7 @@ const demoSlides: SlideConfig[] = [
         },
       },
     ],
+    notes: "解釋三層架構的設計哲學：每層獨立渲染，互不干擾。",
   },
   {
     id: "slide-3",
@@ -76,13 +79,14 @@ const demoSlides: SlideConfig[] = [
         },
       },
     ],
+    notes: "逐一介紹五大核心功能，重點強調零素材需求。",
   },
   {
     id: "slide-4",
     overlays: [
       {
         id: "cta",
-        text: "<p style='font-size:1rem;opacity:0.5;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.5rem'>按 P 開啟控制面板</p><h2 style='font-size:2.5rem;font-weight:700'>開始探索</h2><p style='font-size:0.9rem;opacity:0.5;margin-top:0.5rem'>← → 方向鍵切換投影片</p>",
+        text: "<p style='font-size:1rem;opacity:0.5;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.5rem'>按 P 開啟控制面板</p><h2 style='font-size:2.5rem;font-weight:700'>開始探索</h2><p style='font-size:0.9rem;opacity:0.5;margin-top:0.5rem'>← → 方向鍵切換投影片 | F5 簡報者模式</p>",
         position: "center",
         animation: "fadeIn",
         visible: true,
@@ -92,14 +96,18 @@ const demoSlides: SlideConfig[] = [
         },
       },
     ],
+    notes: "邀請觀眾自己動手試試。提醒 F5 可以進入簡報者模式。",
   },
 ];
+
+// Load auto-saved state or fall back to demo
+const saved = loadAutoSave();
 
 const Index = () => {
   return (
     <PresentationEngine
-      slides={demoSlides}
-      background={demoBackground}
+      slides={saved?.slides ?? demoSlides}
+      background={saved?.background ?? demoBackground}
     />
   );
 };

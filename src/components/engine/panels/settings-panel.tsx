@@ -7,14 +7,24 @@ import {
   parsePresetFile,
 } from "../preset-manager";
 import { cn } from "@/lib/utils";
-import { Download, Upload, Package } from "lucide-react";
+import { Download, Upload, Package, Trash2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { TransitionType } from "@/types/layerslide";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <p className="text-[10px] font-mono uppercase tracking-widest text-ls-text-dim">{children}</p>
   );
 }
+
+const transitionOptions: { value: TransitionType; label: string }[] = [
+  { value: "fade", label: "淡入淡出" },
+  { value: "slide-left", label: "左滑" },
+  { value: "slide-up", label: "上滑" },
+  { value: "zoom", label: "縮放" },
+  { value: "none", label: "無" },
+];
 
 /** Settings panel with preset management */
 const SettingsPanel = () => {
@@ -47,8 +57,33 @@ const SettingsPanel = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const handleClearSave = () => {
+    localStorage.removeItem("ls-auto-save");
+    window.location.reload();
+  };
+
   return (
     <div className="space-y-4">
+      {/* Transition */}
+      <SectionLabel>轉場動畫</SectionLabel>
+      <Select
+        value={state.transition}
+        onValueChange={(value: TransitionType) =>
+          dispatch({ type: "SET_TRANSITION", transition: value })
+        }
+      >
+        <SelectTrigger className="h-8 text-xs">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {transitionOptions.map((opt) => (
+            <SelectItem key={opt.value} value={opt.value}>
+              {opt.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
       {/* Built-in presets */}
       <SectionLabel>內建預設</SectionLabel>
       <div className="space-y-2">
@@ -139,10 +174,24 @@ const SettingsPanel = () => {
           <span className="text-foreground font-mono">{state.fps}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-muted-foreground">自動降級</span>
-          <span className="text-foreground font-mono">{state.autoDegrade ? "開" : "關"}</span>
+          <span className="text-muted-foreground">歷史記錄</span>
+          <span className="text-foreground font-mono">{state.history.length} 步</span>
         </div>
       </div>
+
+      {/* Reset */}
+      <SectionLabel>重置</SectionLabel>
+      <button
+        onClick={handleClearSave}
+        className={cn(
+          "w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-[11px]",
+          "bg-destructive/10 border border-destructive/20 text-destructive",
+          "hover:bg-destructive/20 transition-colors"
+        )}
+      >
+        <Trash2 className="w-3.5 h-3.5" />
+        清除自動儲存並重置
+      </button>
     </div>
   );
 };
