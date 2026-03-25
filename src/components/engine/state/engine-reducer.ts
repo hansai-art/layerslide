@@ -45,7 +45,8 @@ export type EngineAction =
   | { type: "REORDER_SLIDE"; from: number; to: number }
   | { type: "UPDATE_SLIDE_NOTES"; slideIndex: number; notes: string }
   | { type: "SET_TRANSITION"; transition: TransitionType }
-  | { type: "SET_PANEL_TAB"; tab: ControlPanelTab };
+  | { type: "SET_PANEL_TAB"; tab: ControlPanelTab }
+  | { type: "SET_SLIDE_BACKGROUND"; slideIndex: number; background: BackgroundConfig | null };
 
 const MAX_HISTORY = 50;
 
@@ -266,6 +267,14 @@ function engineReducer(state: EngineState, action: EngineAction): EngineState {
 
     case "SET_PANEL_TAB":
       return { ...state, panelTab: action.tab };
+
+    case "SET_SLIDE_BACKGROUND": {
+      const slides = state.slides.map((slide, i) => {
+        if (i !== action.slideIndex) return slide;
+        return { ...slide, background: action.background ?? undefined };
+      });
+      return { ...state, slides };
+    }
 
     default:
       return state;

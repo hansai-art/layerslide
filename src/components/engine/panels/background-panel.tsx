@@ -1,8 +1,11 @@
 import { useEngine } from "@/hooks/use-engine";
 import { getSketch, getSketchNames } from "@/sketches/registry";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import SketchParamsPanel from "./sketch-params-panel";
+import SketchPreview from "./sketch-preview";
+import type { BackgroundConfig } from "@/types/layerslide";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -13,26 +16,114 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 /** Interactive background control panel */
 const BackgroundPanel = () => {
   const { state, dispatch } = useEngine();
-  const { background } = state;
-  const currentSketch = getSketch(background.sketch ?? "");
   const sketchNames = getSketchNames();
+
+  // Per-slide background override
+  const currentSlideBackground = state.slides[state.currentSlide]?.background;
+  const activeBackground: BackgroundConfig = currentSlideBackground ?? state.background;
+  const currentSketch = getSketch(activeBackground.sketch ?? "");
+
+  // Helper: dispatch to per-slide or global background
+  const dispatchSketch = (sketch: string) => {
+    if (currentSlideBackground) {
+      dispatch({
+        type: "SET_SLIDE_BACKGROUND",
+        slideIndex: state.currentSlide,
+        background: { ...activeBackground, type: "generator", sketch },
+      });
+    } else {
+      dispatch({ type: "SET_SKETCH", sketch });
+    }
+  };
+
+  const dispatchOpacity = (opacity: number) => {
+    if (currentSlideBackground) {
+      dispatch({
+        type: "SET_SLIDE_BACKGROUND",
+        slideIndex: state.currentSlide,
+        background: { ...activeBackground, opacity },
+      });
+    } else {
+      dispatch({ type: "SET_BACKGROUND_OPACITY", opacity });
+    }
+  };
+
+  const dispatchBlur = (blur: number) => {
+    if (currentSlideBackground) {
+      dispatch({
+        type: "SET_SLIDE_BACKGROUND",
+        slideIndex: state.currentSlide,
+        background: { ...activeBackground, blur },
+      });
+    } else {
+      dispatch({ type: "SET_BACKGROUND_BLUR", blur });
+    }
+  };
+
+  const dispatchParam = (key: string, value: unknown) => {
+    if (currentSlideBackground) {
+      dispatch({
+        type: "SET_SLIDE_BACKGROUND",
+        slideIndex: state.currentSlide,
+        background: {
+          ...activeBackground,
+          params: { ...activeBackground.params, [key]: value },
+        },
+      });
+    } else {
+      dispatch({ type: "UPDATE_BACKGROUND_PARAM", key, value });
+    }
+  };
 
   return (
     <div className="space-y-4">
-      {/* Sketch selector */}
+      {/* Per-slide background toggle */}
+      <SectionLabel>投影片背景</SectionLabel>
+      <div className="rounded-lg bg-ls-surface-2 p-3 space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] text-muted-foreground">此投影片使用獨立背景</span>
+          <Switch
+            checked={!!currentSlideBackground}
+            onCheckedChange={(checked) => {
+              if (checked) {
+                // Copy current global bg as per-slide override
+                dispatch({
+                  type: "SET_SLIDE_BACKGROUND",
+                  slideIndex: state.currentSlide,
+                  background: { ...state.background },
+                });
+              } else {
+                dispatch({
+                  type: "SET_SLIDE_BACKGROUND",
+                  slideIndex: state.currentSlide,
+                  background: null,
+                });
+              }
+            }}
+          />
+        </div>
+        {currentSlideBackground && (
+          <p className="text-[10px] text-primary">使用獨立背景中</p>
+        )}
+      </div>
+
+      {/* Sketch selector with visual previews */}
       <SectionLabel>選擇背景</SectionLabel>
       <div className="grid grid-cols-2 gap-2">
         {sketchNames.map((name) => (
           <button
             key={name}
-            onClick={() => dispatch({ type: "SET_SKETCH", sketch: name })}
+            onClick={() => dispatchSketch(name)}
             className={cn(
-              "rounded-lg bg-ls-surface-2 border border-border p-3 text-[11px]",
+              "rounded-lg bg-ls-surface-2 border border-border overflow-hidden",
               "hover:border-primary/50 transition-colors text-left",
-              background.sketch === name && "border-primary ring-1 ring-primary/20"
+              activeBackground.sketch === name && "border-primary ring-1 ring-primary/20"
             )}
           >
-            <span className="text-foreground font-medium">{name}</span>
+            <SketchPreview sketchName={name} width={120} height={68} />
+            <div className="p-2">
+              <span className="text-foreground font-medium text-[11px]">{name}</span>
+            </div>
           </button>
         ))}
       </div>
@@ -44,30 +135,30 @@ const BackgroundPanel = () => {
           <div className="flex justify-between text-[11px]">
             <span className="text-muted-foreground">透明度</span>
             <span className="text-foreground font-mono text-[10px]">
-              {((background.opacity ?? 1) * 100).toFixed(0)}%
+              {((activeBackground.opacity ?? 1) * 100).toFixed(0)}%
             </span>
           </div>
           <Slider
-            value={[(background.opacity ?? 1) * 100]}
+            value={[(activeBackground.opacity ?? 1) * 100]}
             min={0}
             max={100}
             step={5}
-            onValueChange={([v]) => dispatch({ type: "SET_BACKGROUND_OPACITY", opacity: v / 100 })}
+            onValueChange={([v]) => dispatchOpacity(v / 100)}
           />
         </div>
         <div className="space-y-1.5">
           <div className="flex justify-between text-[11px]">
             <span className="text-muted-foreground">模糊度</span>
             <span className="text-foreground font-mono text-[10px]">
-              {background.blur ?? 0}px
+              {activeBackground.blur ?? 0}px
             </span>
           </div>
           <Slider
-            value={[background.blur ?? 0]}
+            value={[activeBackground.blur ?? 0]}
             min={0}
             max={20}
             step={1}
-            onValueChange={([v]) => dispatch({ type: "SET_BACKGROUND_BLUR", blur: v })}
+            onValueChange={([v]) => dispatchBlur(v)}
           />
         </div>
       </div>
@@ -78,10 +169,8 @@ const BackgroundPanel = () => {
           <SectionLabel>Sketch 參數</SectionLabel>
           <SketchParamsPanel
             params={currentSketch.defaultParams}
-            values={background.params ?? {}}
-            onChange={(key, value) =>
-              dispatch({ type: "UPDATE_BACKGROUND_PARAM", key, value })
-            }
+            values={activeBackground.params ?? {}}
+            onChange={dispatchParam}
           />
         </>
       )}

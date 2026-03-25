@@ -7,10 +7,11 @@ import {
   parsePresetFile,
 } from "../preset-manager";
 import { cn } from "@/lib/utils";
-import { Download, Upload, Package, Trash2 } from "lucide-react";
+import { Download, Upload, Package, Trash2, FileCode } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { TransitionType } from "@/types/layerslide";
+import { generateStandaloneHtml } from "../html-exporter";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -55,6 +56,21 @@ const SettingsPanel = () => {
       console.error("Failed to parse preset file");
     }
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleExportHtml = () => {
+    const html = generateStandaloneHtml({
+      slides: state.slides,
+      background: state.background,
+      transition: state.transition,
+    });
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "presentation.html";
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleClearSave = () => {
@@ -131,6 +147,17 @@ const SettingsPanel = () => {
         >
           <Upload className="w-3.5 h-3.5" />
           匯入 JSON
+        </button>
+        <button
+          onClick={handleExportHtml}
+          className={cn(
+            "flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[11px]",
+            "bg-ls-surface-2 border border-border text-muted-foreground",
+            "hover:border-primary/40 hover:text-foreground transition-colors"
+          )}
+        >
+          <FileCode className="w-3.5 h-3.5" />
+          匯出 HTML
         </button>
         <input
           ref={fileInputRef}

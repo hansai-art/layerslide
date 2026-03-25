@@ -4,6 +4,7 @@ import { EngineProvider } from "./state/engine-context";
 import { useEngine } from "@/hooks/use-engine";
 import { useFpsMonitor } from "@/hooks/use-fps-monitor";
 import { useVisibilityPause } from "@/hooks/use-visibility-pause";
+import { useTouchNavigation } from "@/hooks/use-touch-navigation";
 import { useAutoSave } from "@/hooks/use-auto-save";
 import BackgroundLayer from "./BackgroundLayer";
 import SlideLayer from "./SlideLayer";
@@ -94,6 +95,11 @@ const EngineInner = () => {
     useCallback(() => dispatch({ type: "SET_PRESENTING", presenting: true }), [dispatch])
   );
 
+  useTouchNavigation({
+    onSwipeLeft: () => dispatch({ type: "NEXT_SLIDE" }),
+    onSwipeRight: () => dispatch({ type: "PREV_SLIDE" }),
+  });
+
   // Keyboard shortcuts
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -150,7 +156,7 @@ const EngineInner = () => {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-ls-surface-0">
-      <BackgroundLayer config={background} />
+      <BackgroundLayer config={slides[currentSlide]?.background ?? background} />
       <SlideLayer
         slides={slides}
         currentSlide={currentSlide}
