@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, GripVertical, ImagePlus, Type as TypeIcon } from "lucide-react";
+import { Plus, Minus, Trash2, GripVertical, ImagePlus, Type as TypeIcon } from "lucide-react";
 import type { OverlayPosition, OverlayAnimation } from "@/types/layerslide";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +15,31 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
     <p className="text-[10px] font-mono uppercase tracking-widest text-ls-text-dim">{children}</p>
   );
 }
+
+/** Parse any CSS font-size to pt value */
+function parsePt(fontSize?: string): number {
+  if (!fontSize) return 32; // default ~2rem
+  const val = parseFloat(fontSize);
+  if (isNaN(val)) return 32;
+  if (fontSize.includes("rem")) return Math.round(val * 16);
+  if (fontSize.includes("px")) return Math.round(val * 0.75);
+  return Math.round(val); // assume pt
+}
+
+const TEXT_COLORS = [
+  { label: "白", value: "hsl(210, 20%, 92%)" },
+  { label: "淺灰", value: "hsl(210, 10%, 70%)" },
+  { label: "青", value: "hsl(180, 80%, 50%)" },
+  { label: "紫", value: "hsl(260, 60%, 55%)" },
+  { label: "藍", value: "hsl(220, 80%, 60%)" },
+  { label: "綠", value: "hsl(140, 70%, 50%)" },
+  { label: "黃", value: "hsl(45, 90%, 60%)" },
+  { label: "橙", value: "hsl(25, 90%, 55%)" },
+  { label: "紅", value: "hsl(0, 72%, 55%)" },
+  { label: "粉", value: "hsl(330, 70%, 60%)" },
+  { label: "深灰", value: "hsl(220, 10%, 30%)" },
+  { label: "黑", value: "hsl(220, 20%, 10%)" },
+];
 
 const positionKeys: { value: OverlayPosition; key: string }[] = [
   { value: "top", key: "pos.top" },
@@ -418,35 +443,71 @@ const TextPanel = () => {
             {/* Text-only: font size + color */}
             {!isImage && (
               <>
+                {/* Font size: +/- buttons */}
                 <div className="space-y-1">
                   <span className="text-[10px] text-muted-foreground">{t("text.fontSize")}</span>
-                  <Input
-                    value={overlay.style?.fontSize ?? "2rem"}
-                    onChange={(e) =>
-                      dispatch({
-                        type: "UPDATE_OVERLAY",
-                        slideIndex: currentSlide,
-                        overlayId: overlay.id,
-                        updates: { style: { ...overlay.style, fontSize: e.target.value } },
-                      })
-                    }
-                    className="h-7 text-xs font-mono bg-ls-surface-1"
-                  />
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => {
+                        const current = parsePt(overlay.style?.fontSize);
+                        if (current <= 12) return;
+                        dispatch({
+                          type: "UPDATE_OVERLAY",
+                          slideIndex: currentSlide,
+                          overlayId: overlay.id,
+                          updates: { style: { ...overlay.style, fontSize: `${current - 12}pt` } },
+                        });
+                      }}
+                      className="flex items-center justify-center w-7 h-7 rounded-md bg-ls-surface-1 border border-border text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+                    >
+                      <Minus className="w-3 h-3" />
+                    </button>
+                    <span className="flex-1 text-center text-xs font-mono text-foreground">
+                      {parsePt(overlay.style?.fontSize)}pt
+                    </span>
+                    <button
+                      onClick={() => {
+                        const current = parsePt(overlay.style?.fontSize);
+                        dispatch({
+                          type: "UPDATE_OVERLAY",
+                          slideIndex: currentSlide,
+                          overlayId: overlay.id,
+                          updates: { style: { ...overlay.style, fontSize: `${current + 12}pt` } },
+                        });
+                      }}
+                      className="flex items-center justify-center w-7 h-7 rounded-md bg-ls-surface-1 border border-border text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+                    >
+                      <Plus className="w-3 h-3" />
+                    </button>
+                  </div>
                 </div>
-                <div className="space-y-1">
+
+                {/* Color picker */}
+                <div className="space-y-1.5">
                   <span className="text-[10px] text-muted-foreground">{t("text.color")}</span>
-                  <Input
-                    value={overlay.style?.color ?? "hsl(210, 20%, 92%)"}
-                    onChange={(e) =>
-                      dispatch({
-                        type: "UPDATE_OVERLAY",
-                        slideIndex: currentSlide,
-                        overlayId: overlay.id,
-                        updates: { style: { ...overlay.style, color: e.target.value } },
-                      })
-                    }
-                    className="h-7 text-xs font-mono bg-ls-surface-1"
-                  />
+                  <div className="grid grid-cols-6 gap-1.5">
+                    {TEXT_COLORS.map((c) => (
+                      <button
+                        key={c.value}
+                        onClick={() =>
+                          dispatch({
+                            type: "UPDATE_OVERLAY",
+                            slideIndex: currentSlide,
+                            overlayId: overlay.id,
+                            updates: { style: { ...overlay.style, color: c.value } },
+                          })
+                        }
+                        className={cn(
+                          "w-full aspect-square rounded-md border-2 transition-transform hover:scale-110",
+                          overlay.style?.color === c.value
+                            ? "border-white ring-1 ring-white/30"
+                            : "border-transparent"
+                        )}
+                        style={{ backgroundColor: c.value }}
+                        title={c.label}
+                      />
+                    ))}
+                  </div>
                 </div>
               </>
             )}
