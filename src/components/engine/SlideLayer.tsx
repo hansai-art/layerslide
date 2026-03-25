@@ -17,7 +17,7 @@ const SlideLayer = ({ slides, currentSlide, onSlideChange, transition = "fade", 
   return (
     <div
       id="ls-slides"
-      className="fixed inset-0 flex items-center justify-center"
+      className="absolute inset-0 flex items-center justify-center"
       style={{ zIndex: 1, paddingBottom: fullscreen ? 0 : 124 }}
     >
       <div className="relative w-full h-full flex items-center justify-center">

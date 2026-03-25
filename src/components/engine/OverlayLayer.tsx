@@ -291,7 +291,7 @@ const OverlayLayer = ({ overlays, editMode = false, onSelectOverlay }: OverlayLa
     <div
       id="ls-overlay"
       className={cn(
-        "fixed inset-0",
+        "absolute inset-0",
         editMode ? "pointer-events-auto" : "pointer-events-none"
       )}
       style={{ zIndex: 2 }}

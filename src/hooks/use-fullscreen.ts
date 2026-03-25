@@ -4,7 +4,8 @@ export function useFullscreen() {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const enter = useCallback(() => {
-    document.documentElement.requestFullscreen?.();
+    const el = document.getElementById("ls-engine") ?? document.documentElement;
+    el.requestFullscreen?.();
   }, []);
 
   const exit = useCallback(() => {

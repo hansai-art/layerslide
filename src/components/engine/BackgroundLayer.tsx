@@ -145,7 +145,7 @@ const BackgroundLayer = ({ config }: BackgroundLayerProps) => {
   return (
     <div
       id="ls-background"
-      className="fixed inset-0"
+      className="absolute inset-0"
       style={{
         zIndex: 0,
         opacity,

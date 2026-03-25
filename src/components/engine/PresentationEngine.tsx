@@ -154,7 +154,7 @@ const EngineInner = () => {
   useKeyboardShortcuts(shortcuts);
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-ls-surface-0">
+    <div className="relative w-screen h-screen overflow-hidden bg-ls-surface-0" id="ls-engine">
       <BackgroundLayer config={slides[currentSlide]?.background ?? background} />
       <SlideLayer
         slides={slides}
@@ -168,29 +168,27 @@ const EngineInner = () => {
         editMode={editMode}
         onSelectOverlay={handleSelectOverlay}
       />
-      {/* UI elements: hidden in fullscreen */}
-      {!isFullscreen && (
-        <>
-          {selectedOverlayData && selectedOverlay && (
-            <FloatingToolbar
-              overlay={selectedOverlayData}
-              slideIndex={currentSlide}
-              position={selectedOverlay.position}
-              onClose={() => setSelectedOverlay(null)}
-            />
-          )}
-          <ControlPanel
-            isOpen={panelOpen}
-            onToggle={() => dispatch({ type: "TOGGLE_PANEL" })}
+      {/* UI elements: hidden via CSS in fullscreen to avoid unmounting */}
+      <div style={{ display: isFullscreen ? "none" : "contents" }}>
+        {selectedOverlayData && selectedOverlay && (
+          <FloatingToolbar
+            overlay={selectedOverlayData}
+            slideIndex={currentSlide}
+            position={selectedOverlay.position}
+            onClose={() => setSelectedOverlay(null)}
           />
-          <SlideFilmstrip onOpenPresenter={() => setPresenterOpen(true)} />
-          <PresenterMode
-            isOpen={presenterOpen}
-            onClose={() => setPresenterOpen(false)}
-          />
-          <OnboardingTutorial />
-        </>
-      )}
+        )}
+        <ControlPanel
+          isOpen={panelOpen}
+          onToggle={() => dispatch({ type: "TOGGLE_PANEL" })}
+        />
+        <SlideFilmstrip onOpenPresenter={() => setPresenterOpen(true)} />
+        <PresenterMode
+          isOpen={presenterOpen}
+          onClose={() => setPresenterOpen(false)}
+        />
+        <OnboardingTutorial />
+      </div>
     </div>
   );
 };
