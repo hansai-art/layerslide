@@ -1,6 +1,6 @@
 # LayerSlide
 
-**層級式簡報系統** — 背景動畫永不中斷，文字內容即時編輯。
+**層級式簡報系統** ： 背景動畫永不中斷，文字內容即時編輯。
 
 A layer-based presentation system with persistent animated backgrounds, real-time text editing, and professional presenter mode. Built with React + Vite + Tailwind.
 

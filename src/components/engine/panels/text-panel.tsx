@@ -110,7 +110,7 @@ const TextPanel = () => {
             </button>
           </div>
 
-          {/* Text content edit — preserves HTML */}
+          {/* Text content edit: preserves HTML */}
           <div className="space-y-1">
             <span className="text-[10px] text-muted-foreground">文字內容 (HTML)</span>
             <Textarea

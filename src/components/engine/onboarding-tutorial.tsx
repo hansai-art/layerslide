@@ -180,7 +180,7 @@ const OnboardingTutorial = ({ forceOpen }: OnboardingTutorialProps) => {
 
   return (
     <>
-      {/* Help button — above filmstrip */}
+      {/* Help button: above filmstrip */}
       <button
         onClick={() => {
           setOpen(true);
