@@ -290,11 +290,11 @@ const OnboardingTutorial = () => {
 
   return (
     <>
-      {/* Spotlight overlay */}
+      {/* Spotlight overlay: very subtle, just enough to draw attention to target */}
       <div
         className="fixed inset-0 z-[50] pointer-events-none"
         style={{
-          backgroundColor: "rgba(0, 0, 0, 0.6)",
+          backgroundColor: "rgba(0, 0, 0, 0.15)",
           clipPath: getSpotlightClipPath(),
           transition: "clip-path 0.4s ease-out",
         }}

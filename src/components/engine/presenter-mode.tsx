@@ -10,6 +10,7 @@ import {
   Minimize,
 } from "lucide-react";
 import { useEngine } from "@/hooks/use-engine";
+import { useI18n } from "@/i18n/i18n-context";
 import { useFullscreen } from "@/hooks/use-fullscreen";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +29,7 @@ const stripHtml = (html: string) => html.replace(/<[^>]+>/g, "");
 
 const PresenterMode = ({ isOpen, onClose }: PresenterModeProps) => {
   const { state, dispatch } = useEngine();
+  const { t } = useI18n();
   const { isFullscreen, toggle: toggleFullscreen } = useFullscreen();
 
   const [elapsed, setElapsed] = useState(0);
@@ -137,7 +139,7 @@ const PresenterMode = ({ isOpen, onClose }: PresenterModeProps) => {
               "p-1.5 rounded-md transition-colors",
               "hover:bg-ls-surface-2 text-muted-foreground hover:text-foreground"
             )}
-            title={running ? "暫停" : "開始"}
+            title={running ? t("presenter.pause") : t("presenter.start")}
           >
             {running ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
           </button>
@@ -147,7 +149,7 @@ const PresenterMode = ({ isOpen, onClose }: PresenterModeProps) => {
               "p-1.5 rounded-md transition-colors",
               "hover:bg-ls-surface-2 text-muted-foreground hover:text-foreground"
             )}
-            title="重置"
+            title={t("presenter.reset")}
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
@@ -166,14 +168,14 @@ const PresenterMode = ({ isOpen, onClose }: PresenterModeProps) => {
         {/* Speaker notes */}
         <div className="flex-1 min-w-0 px-4 py-2.5 border-r border-border/50 overflow-y-auto max-h-[100px]">
           <p className="text-[9px] font-mono uppercase tracking-widest text-ls-text-dim mb-0.5">
-            講者筆記
+            {t("presenter.notes")}
           </p>
           {notes ? (
             <p className="text-xs leading-relaxed text-foreground/80 whitespace-pre-wrap">
               {notes}
             </p>
           ) : (
-            <p className="text-xs text-ls-text-dim italic">（無筆記）</p>
+            <p className="text-xs text-ls-text-dim italic">{t("presenter.noNotes")}</p>
           )}
         </div>
 
@@ -181,14 +183,14 @@ const PresenterMode = ({ isOpen, onClose }: PresenterModeProps) => {
         <div className="flex items-center px-4 border-r border-border/50 max-w-[200px]">
           <div className="min-w-0">
             <p className="text-[9px] font-mono uppercase tracking-widest text-ls-text-dim mb-0.5">
-              下一張
+              {t("presenter.next")}
             </p>
             {nextSlide ? (
               <p className="text-xs text-foreground/60 truncate">
                 {nextOverlayText || "（無文字）"}
               </p>
             ) : (
-              <p className="text-xs text-ls-text-dim italic">最後一張</p>
+              <p className="text-xs text-ls-text-dim italic">{t("presenter.last")}</p>
             )}
           </div>
         </div>
@@ -203,7 +205,7 @@ const PresenterMode = ({ isOpen, onClose }: PresenterModeProps) => {
               "hover:bg-ls-surface-2 text-muted-foreground hover:text-foreground",
               "disabled:opacity-30 disabled:pointer-events-none"
             )}
-            title="上一張"
+            title={t("presenter.prev")}
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -215,7 +217,7 @@ const PresenterMode = ({ isOpen, onClose }: PresenterModeProps) => {
               "hover:bg-ls-surface-2 text-muted-foreground hover:text-foreground",
               "disabled:opacity-30 disabled:pointer-events-none"
             )}
-            title="下一張"
+            title={t("presenter.next")}
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -228,7 +230,7 @@ const PresenterMode = ({ isOpen, onClose }: PresenterModeProps) => {
               "p-2 rounded-md transition-colors",
               "hover:bg-ls-surface-2 text-muted-foreground hover:text-foreground"
             )}
-            title={isFullscreen ? "退出全螢幕" : "全螢幕"}
+            title={isFullscreen ? t("presenter.exitFullscreen") : t("presenter.fullscreen")}
           >
             {isFullscreen ? (
               <Minimize className="w-4 h-4" />
@@ -243,7 +245,7 @@ const PresenterMode = ({ isOpen, onClose }: PresenterModeProps) => {
               "p-2 rounded-md transition-colors",
               "bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300"
             )}
-            title="結束簡報 (Esc)"
+            title={`${t("presenter.end")} (Esc)`}
           >
             <X className="w-4 h-4" />
           </button>

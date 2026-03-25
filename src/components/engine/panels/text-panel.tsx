@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { useEngine } from "@/hooks/use-engine";
+import { useI18n } from "@/i18n/i18n-context";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -15,23 +16,24 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-const positionOptions: { value: OverlayPosition; label: string }[] = [
-  { value: "top", label: "頂部" },
-  { value: "center", label: "中間" },
-  { value: "bottom", label: "底部" },
-  { value: "custom", label: "自訂" },
+const positionKeys: { value: OverlayPosition; key: string }[] = [
+  { value: "top", key: "pos.top" },
+  { value: "center", key: "pos.center" },
+  { value: "bottom", key: "pos.bottom" },
+  { value: "custom", key: "pos.custom" },
 ];
 
-const animationOptions: { value: OverlayAnimation; label: string }[] = [
-  { value: "fadeIn", label: "淡入" },
-  { value: "slideUp", label: "上滑" },
-  { value: "typewriter", label: "打字機" },
-  { value: "none", label: "無" },
+const animationKeys: { value: OverlayAnimation; key: string }[] = [
+  { value: "fadeIn", key: "anim.fadeIn" },
+  { value: "slideUp", key: "anim.slideUp" },
+  { value: "typewriter", key: "anim.typewriter" },
+  { value: "none", key: "anim.none" },
 ];
 
 /** Interactive overlay editor (text + image) */
 const TextPanel = () => {
   const { state, dispatch } = useEngine();
+  const { t } = useI18n();
   const { currentSlide, slides } = state;
   const overlays = slides[currentSlide]?.overlays ?? [];
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -110,7 +112,7 @@ const TextPanel = () => {
     <div className="space-y-4">
       {/* Add buttons */}
       <div className="flex items-center justify-between">
-        <SectionLabel>覆蓋層 ({overlays.length})</SectionLabel>
+        <SectionLabel>{t("text.blocks")} ({overlays.length})</SectionLabel>
         <div className="flex gap-1">
           <button
             onClick={handleAddText}
@@ -120,7 +122,7 @@ const TextPanel = () => {
             )}
           >
             <TypeIcon className="w-3 h-3" />
-            文字
+            {t("text.addText")}
           </button>
           <button
             onClick={handleAddImageUrl}
@@ -130,7 +132,7 @@ const TextPanel = () => {
             )}
           >
             <ImagePlus className="w-3 h-3" />
-            圖片
+            {t("text.addImage")}
           </button>
           <button
             onClick={() => fileInputRef.current?.click()}
@@ -140,7 +142,7 @@ const TextPanel = () => {
             )}
           >
             <Plus className="w-3 h-3" />
-            上傳
+            {t("text.upload")}
           </button>
           <input
             ref={fileInputRef}
@@ -170,11 +172,11 @@ const TextPanel = () => {
                 "text-[9px] font-mono px-1.5 py-0.5 rounded",
                 isImage ? "bg-purple-500/20 text-purple-300" : "bg-primary/20 text-primary"
               )}>
-                {isImage ? "圖片" : "文字"}
+                {isImage ? t("text.addImage") : t("text.addText")}
               </span>
               <span className="text-[11px] text-muted-foreground truncate flex-1">
                 {isImage
-                  ? (overlay.text || overlay.imageSrc?.split("/").pop()?.slice(0, 20) || "圖片")
+                  ? (overlay.text || overlay.imageSrc?.split("/").pop()?.slice(0, 20) || t("text.addImage"))
                   : (overlay.text.replace(/<[^>]+>/g, "").slice(0, 20) || "（無文字）")}
               </span>
               <Switch
@@ -191,7 +193,7 @@ const TextPanel = () => {
               <button
                 onClick={() => handleDeleteOverlay(overlay.id)}
                 className="p-1 rounded hover:bg-destructive/10 text-ls-text-dim hover:text-destructive transition-colors"
-                title="刪除"
+                title={t("common.delete")}
               >
                 <Trash2 className="w-3 h-3" />
               </button>
@@ -213,7 +215,7 @@ const TextPanel = () => {
 
                 {/* Image URL */}
                 <div className="space-y-1">
-                  <span className="text-[10px] text-muted-foreground">圖片網址</span>
+                  <span className="text-[10px] text-muted-foreground">{t("text.imageUrl")}</span>
                   <Input
                     value={overlay.imageSrc ?? ""}
                     onChange={(e) =>
@@ -232,7 +234,7 @@ const TextPanel = () => {
                 {/* Width */}
                 <div className="space-y-1">
                   <div className="flex justify-between text-[10px]">
-                    <span className="text-muted-foreground">寬度</span>
+                    <span className="text-muted-foreground">{t("text.width")}</span>
                     <span className="font-mono">{overlay.imageWidth ?? 400}px</span>
                   </div>
                   <Slider
@@ -254,7 +256,7 @@ const TextPanel = () => {
                 {/* Opacity */}
                 <div className="space-y-1">
                   <div className="flex justify-between text-[10px]">
-                    <span className="text-muted-foreground">透明度</span>
+                    <span className="text-muted-foreground">{t("text.opacity")}</span>
                     <span className="font-mono">{((overlay.imageOpacity ?? 1) * 100).toFixed(0)}%</span>
                   </div>
                   <Slider
@@ -276,7 +278,7 @@ const TextPanel = () => {
                 {/* Border radius */}
                 <div className="space-y-1">
                   <div className="flex justify-between text-[10px]">
-                    <span className="text-muted-foreground">圓角</span>
+                    <span className="text-muted-foreground">{t("text.borderRadius")}</span>
                     <span className="font-mono">{overlay.imageBorderRadius ?? 0}px</span>
                   </div>
                   <Slider
@@ -300,7 +302,7 @@ const TextPanel = () => {
             {/* Text-specific controls */}
             {!isImage && (
               <div className="space-y-1">
-                <span className="text-[10px] text-muted-foreground">文字內容 (HTML)</span>
+                <span className="text-[10px] text-muted-foreground">{t("text.content")}</span>
                 <Textarea
                   value={overlay.text}
                   onChange={(e) =>
@@ -319,7 +321,7 @@ const TextPanel = () => {
 
             {/* Shared controls: Position */}
             <div className="space-y-1">
-              <span className="text-[10px] text-muted-foreground">位置</span>
+              <span className="text-[10px] text-muted-foreground">{t("text.position")}</span>
               <Select
                 value={overlay.position}
                 onValueChange={(value: OverlayPosition) =>
@@ -335,9 +337,9 @@ const TextPanel = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {positionOptions.map((opt) => (
+                  {positionKeys.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
+                      {t(opt.key)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -388,7 +390,7 @@ const TextPanel = () => {
 
             {/* Animation */}
             <div className="space-y-1">
-              <span className="text-[10px] text-muted-foreground">動畫</span>
+              <span className="text-[10px] text-muted-foreground">{t("text.animation")}</span>
               <Select
                 value={overlay.animation}
                 onValueChange={(value: OverlayAnimation) =>
@@ -404,9 +406,9 @@ const TextPanel = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {animationOptions.map((opt) => (
+                  {animationKeys.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
+                      {t(opt.key)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -417,7 +419,7 @@ const TextPanel = () => {
             {!isImage && (
               <>
                 <div className="space-y-1">
-                  <span className="text-[10px] text-muted-foreground">字體大小</span>
+                  <span className="text-[10px] text-muted-foreground">{t("text.fontSize")}</span>
                   <Input
                     value={overlay.style?.fontSize ?? "2rem"}
                     onChange={(e) =>
@@ -432,7 +434,7 @@ const TextPanel = () => {
                   />
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[10px] text-muted-foreground">文字顏色</span>
+                  <span className="text-[10px] text-muted-foreground">{t("text.color")}</span>
                   <Input
                     value={overlay.style?.color ?? "hsl(210, 20%, 92%)"}
                     onChange={(e) =>

@@ -1,6 +1,7 @@
 import { useRef, useEffect, useCallback } from "react";
 import { Plus, Copy, Trash2, Undo2, Redo2, MonitorPlay } from "lucide-react";
 import { useEngine } from "@/hooks/use-engine";
+import { useI18n } from "@/i18n/i18n-context";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,
@@ -52,6 +53,7 @@ interface SlideFilmstripProps {
 /** Bottom filmstrip bar showing slide thumbnails */
 const SlideFilmstrip = ({ onOpenPresenter }: SlideFilmstripProps) => {
   const { state, dispatch } = useEngine();
+  const { t } = useI18n();
   const scrollRef = useRef<HTMLDivElement>(null);
   const { currentSlide, slides } = state;
 
@@ -87,23 +89,23 @@ const SlideFilmstrip = ({ onOpenPresenter }: SlideFilmstripProps) => {
         {/* Toolbar row */}
         <div className="flex items-center justify-between h-9 px-3 border-b border-border/50">
           <span className="text-[11px] font-mono text-ls-text-dim select-none">
-            投影片 {currentSlide + 1}/{slides.length}
+            {t("filmstrip.slides")} {currentSlide + 1}/{slides.length}
           </span>
 
           <div className="flex items-center gap-0.5">
             <ToolbarButton
               icon={Plus}
-              label="新增投影片"
+              label={t("filmstrip.addSlide")}
               onClick={() => dispatch({ type: "ADD_SLIDE" })}
             />
             <ToolbarButton
               icon={Copy}
-              label="複製投影片"
+              label={t("filmstrip.duplicateSlide")}
               onClick={() => dispatch({ type: "DUPLICATE_SLIDE", index: currentSlide })}
             />
             <ToolbarButton
               icon={Trash2}
-              label="刪除投影片"
+              label={t("filmstrip.deleteSlide")}
               onClick={() => dispatch({ type: "DELETE_SLIDE", index: currentSlide })}
               disabled={slides.length <= 1}
               destructive
@@ -113,13 +115,13 @@ const SlideFilmstrip = ({ onOpenPresenter }: SlideFilmstripProps) => {
 
             <ToolbarButton
               icon={Undo2}
-              label="復原 (Ctrl+Z)"
+              label={`${t("filmstrip.undo")} (Ctrl+Z)`}
               onClick={() => dispatch({ type: "UNDO" })}
               disabled={state.history.length === 0}
             />
             <ToolbarButton
               icon={Redo2}
-              label="重做 (Ctrl+Y)"
+              label={`${t("filmstrip.redo")} (Ctrl+Y)`}
               onClick={() => dispatch({ type: "REDO" })}
               disabled={state.future.length === 0}
             />
@@ -128,7 +130,7 @@ const SlideFilmstrip = ({ onOpenPresenter }: SlideFilmstripProps) => {
 
             <ToolbarButton
               icon={MonitorPlay}
-              label="簡報者模式 (F5)"
+              label={`${t("filmstrip.presenter")} (F5)`}
               onClick={onOpenPresenter}
             />
           </div>

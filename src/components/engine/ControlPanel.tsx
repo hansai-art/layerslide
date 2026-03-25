@@ -1,6 +1,7 @@
 import { Layers, Image, Type, Navigation, Settings, Timer, ChevronLeft, ChevronRight } from "lucide-react";
 import type { ControlPanelTab } from "@/types/layerslide";
 import { useEngine } from "@/hooks/use-engine";
+import { useI18n } from "@/i18n/i18n-context";
 import { cn } from "@/lib/utils";
 import BackgroundPanel from "./panels/background-panel";
 import TextPanel from "./panels/text-panel";
@@ -13,18 +14,27 @@ interface ControlPanelProps {
   onToggle: () => void;
 }
 
-const tabs: { id: ControlPanelTab; label: string; icon: typeof Layers }[] = [
-  { id: "background", label: "背景", icon: Image },
-  { id: "text", label: "文字", icon: Type },
-  { id: "animation", label: "時間軸", icon: Timer },
-  { id: "navigation", label: "導航", icon: Navigation },
-  { id: "settings", label: "設定", icon: Settings },
+const tabs: { id: ControlPanelTab; icon: typeof Layers }[] = [
+  { id: "background", icon: Image },
+  { id: "text", icon: Type },
+  { id: "animation", icon: Timer },
+  { id: "navigation", icon: Navigation },
+  { id: "settings", icon: Settings },
 ];
 
 /** Control Panel: Side panel for real-time control (P key toggle) */
 const ControlPanel = ({ isOpen, onToggle }: ControlPanelProps) => {
   const { state, dispatch } = useEngine();
+  const { t } = useI18n();
   const activeTab = state.panelTab;
+
+  const tabLabels: Record<ControlPanelTab, string> = {
+    background: t("panel.background"),
+    text: t("panel.text"),
+    animation: t("panel.timeline"),
+    navigation: t("panel.navigation"),
+    settings: t("panel.settings"),
+  };
 
   return (
     <>
@@ -77,7 +87,7 @@ const ControlPanel = ({ isOpen, onToggle }: ControlPanelProps) => {
               )}
             >
               <tab.icon className="w-3.5 h-3.5" />
-              {tab.label}
+              {tabLabels[tab.id]}
             </button>
           ))}
         </div>

@@ -1,4 +1,5 @@
 import { useEngine } from "@/hooks/use-engine";
+import { useI18n } from "@/i18n/i18n-context";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,12 +13,13 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 /** Slide navigation panel with speaker notes */
 const NavigationPanel = () => {
   const { state, dispatch } = useEngine();
+  const { t } = useI18n();
   const { currentSlide, slides } = state;
   const currentNotes = slides[currentSlide]?.notes ?? "";
 
   return (
     <div className="space-y-4">
-      <SectionLabel>投影片導航</SectionLabel>
+      <SectionLabel>{t("nav.slides")}</SectionLabel>
 
       {/* Prev/Next buttons */}
       <div className="flex items-center justify-between">
@@ -33,7 +35,7 @@ const NavigationPanel = () => {
           )}
         >
           <ChevronLeft className="w-3.5 h-3.5" />
-          上一張
+          {t("nav.prev")}
         </button>
         <span className="text-xs font-mono text-foreground">
           {currentSlide + 1} / {slides.length}
@@ -49,7 +51,7 @@ const NavigationPanel = () => {
               : "hover:border-primary/40 hover:text-foreground text-muted-foreground"
           )}
         >
-          下一張
+          {t("nav.next")}
           <ChevronRight className="w-3.5 h-3.5" />
         </button>
       </div>
@@ -85,7 +87,7 @@ const NavigationPanel = () => {
       </div>
 
       {/* Speaker notes */}
-      <SectionLabel>講者筆記</SectionLabel>
+      <SectionLabel>{t("nav.notes")}</SectionLabel>
       <Textarea
         value={currentNotes}
         onChange={(e) =>
@@ -100,30 +102,30 @@ const NavigationPanel = () => {
       />
 
       {/* Keyboard shortcuts info */}
-      <SectionLabel>快捷鍵</SectionLabel>
+      <SectionLabel>{t("nav.shortcuts")}</SectionLabel>
       <div className="rounded-lg bg-ls-surface-2 p-3 space-y-1.5 text-[11px]">
         <div className="flex justify-between">
-          <span className="text-muted-foreground">下一張</span>
+          <span className="text-muted-foreground">{t("nav.next")}</span>
           <span className="font-mono text-foreground">→ / Space</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-muted-foreground">上一張</span>
+          <span className="text-muted-foreground">{t("nav.prev")}</span>
           <span className="font-mono text-foreground">←</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-muted-foreground">控制面板</span>
+          <span className="text-muted-foreground">{t("nav.controlPanel")}</span>
           <span className="font-mono text-foreground">P</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-muted-foreground">簡報者模式</span>
+          <span className="text-muted-foreground">{t("nav.presenterMode")}</span>
           <span className="font-mono text-foreground">F5</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-muted-foreground">復原</span>
+          <span className="text-muted-foreground">{t("nav.undoLabel")}</span>
           <span className="font-mono text-foreground">Ctrl+Z</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-muted-foreground">重做</span>
+          <span className="text-muted-foreground">{t("nav.redoLabel")}</span>
           <span className="font-mono text-foreground">Ctrl+Y</span>
         </div>
       </div>
