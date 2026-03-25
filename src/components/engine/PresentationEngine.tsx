@@ -7,6 +7,7 @@ import { useVisibilityPause } from "@/hooks/use-visibility-pause";
 import { useTouchNavigation } from "@/hooks/use-touch-navigation";
 import { useAutoSave } from "@/hooks/use-auto-save";
 import { useKeyboardShortcuts, type ShortcutDef } from "@/hooks/use-keyboard-shortcuts";
+import { useFullscreen } from "@/hooks/use-fullscreen";
 import BackgroundLayer from "./BackgroundLayer";
 import SlideLayer from "./SlideLayer";
 import OverlayLayer from "./OverlayLayer";
@@ -28,6 +29,8 @@ const EngineInner = () => {
   const { currentSlide, slides, background, panelOpen, autoDegrade, transition } = state;
   const lowFpsCountRef = useRef(0);
   const degradedRef = useRef(false);
+
+  const { isFullscreen } = useFullscreen();
 
   const activeOverlays = slides[currentSlide]?.overlays ?? [];
 
@@ -158,30 +161,36 @@ const EngineInner = () => {
         currentSlide={currentSlide}
         onSlideChange={(i) => dispatch({ type: "SET_SLIDE", index: i })}
         transition={transition}
+        fullscreen={isFullscreen}
       />
       <OverlayLayer
         overlays={activeOverlays}
         editMode={editMode}
         onSelectOverlay={handleSelectOverlay}
       />
-      {selectedOverlayData && selectedOverlay && (
-        <FloatingToolbar
-          overlay={selectedOverlayData}
-          slideIndex={currentSlide}
-          position={selectedOverlay.position}
-          onClose={() => setSelectedOverlay(null)}
-        />
+      {/* UI elements: hidden in fullscreen */}
+      {!isFullscreen && (
+        <>
+          {selectedOverlayData && selectedOverlay && (
+            <FloatingToolbar
+              overlay={selectedOverlayData}
+              slideIndex={currentSlide}
+              position={selectedOverlay.position}
+              onClose={() => setSelectedOverlay(null)}
+            />
+          )}
+          <ControlPanel
+            isOpen={panelOpen}
+            onToggle={() => dispatch({ type: "TOGGLE_PANEL" })}
+          />
+          <SlideFilmstrip onOpenPresenter={() => setPresenterOpen(true)} />
+          <PresenterMode
+            isOpen={presenterOpen}
+            onClose={() => setPresenterOpen(false)}
+          />
+          <OnboardingTutorial />
+        </>
       )}
-      <ControlPanel
-        isOpen={panelOpen}
-        onToggle={() => dispatch({ type: "TOGGLE_PANEL" })}
-      />
-      <SlideFilmstrip onOpenPresenter={() => setPresenterOpen(true)} />
-      <PresenterMode
-        isOpen={presenterOpen}
-        onClose={() => setPresenterOpen(false)}
-      />
-      <OnboardingTutorial />
     </div>
   );
 };

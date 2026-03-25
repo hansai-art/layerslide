@@ -6,10 +6,11 @@ interface SlideLayerProps {
   currentSlide: number;
   onSlideChange: (index: number) => void;
   transition?: TransitionType;
+  fullscreen?: boolean;
 }
 
 /** Layer 1: Slide content with transition effects */
-const SlideLayer = ({ slides, currentSlide, onSlideChange, transition = "fade" }: SlideLayerProps) => {
+const SlideLayer = ({ slides, currentSlide, onSlideChange, transition = "fade", fullscreen = false }: SlideLayerProps) => {
   const goNext = () => onSlideChange(Math.min(currentSlide + 1, slides.length - 1));
   const goPrev = () => onSlideChange(Math.max(currentSlide - 1, 0));
 
@@ -17,7 +18,7 @@ const SlideLayer = ({ slides, currentSlide, onSlideChange, transition = "fade" }
     <div
       id="ls-slides"
       className="fixed inset-0 flex items-center justify-center"
-      style={{ zIndex: 1, paddingBottom: 124 }}
+      style={{ zIndex: 1, paddingBottom: fullscreen ? 0 : 124 }}
     >
       <div className="relative w-full h-full flex items-center justify-center">
         {slides.map((slide, index) => (
