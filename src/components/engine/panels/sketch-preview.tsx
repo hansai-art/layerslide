@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getSketch } from "@/sketches/registry";
 
 interface SketchPreviewProps {
@@ -7,80 +7,106 @@ interface SketchPreviewProps {
   height?: number;
 }
 
-/** Renders a tiny canvas preview of a sketch for the picker */
+// Cache snapshots so we don't re-render when component remounts
+const snapshotCache = new Map<string, string>();
+
+/** Renders a static snapshot of a sketch (runs ~30 frames then captures) */
 const SketchPreview = ({ sketchName, width = 120, height = 68 }: SketchPreviewProps) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const cleanupRef = useRef<(() => void) | null>(null);
+  const [snapshot, setSnapshot] = useState<string | null>(
+    snapshotCache.get(sketchName) ?? null
+  );
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    // Already cached
+    if (snapshotCache.has(sketchName)) {
+      setSnapshot(snapshotCache.get(sketchName)!);
+      return;
+    }
 
     const sketch = getSketch(sketchName);
     if (!sketch) return;
 
+    // Create offscreen canvas
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Build reduced params from defaults
-    const reducedParams: Record<string, unknown> = {};
+    // Reduced params for preview
+    const params: Record<string, unknown> = {};
     for (const [key, def] of Object.entries(sketch.defaultParams)) {
       let value = def.default;
-      // Reduce particle/count params for preview
-      if (typeof value === "number" && (key.toLowerCase().includes("count") || key.toLowerCase().includes("particle") || key.toLowerCase().includes("star"))) {
-        value = Math.min(value as number, 15);
+      if (
+        typeof value === "number" &&
+        (key.toLowerCase().includes("count") ||
+          key.toLowerCase().includes("particle") ||
+          key.toLowerCase().includes("star") ||
+          key.toLowerCase().includes("blob"))
+      ) {
+        value = Math.min(value as number, 10);
       }
-      reducedParams[key] = value;
+      params[key] = value;
     }
 
     try {
-      sketch.setup(canvas, reducedParams);
+      sketch.setup(canvas, params);
     } catch {
       return;
     }
 
-    let animFrame: number;
-    const startTime = performance.now();
-    const maxDuration = 3000; // Stop after 3 seconds
+    // Run 30 frames then capture
+    let frame = 0;
+    const maxFrames = 30;
+    let raf: number;
 
-    const animate = () => {
-      const elapsed = performance.now() - startTime;
-      if (elapsed > maxDuration) {
-        return; // Stop animation to save CPU
-      }
+    const run = () => {
       try {
-        sketch.draw(ctx, elapsed, reducedParams);
+        sketch.draw(ctx, frame * 50, params); // simulate 50ms per frame
       } catch {
+        sketch.destroy();
         return;
       }
-      animFrame = requestAnimationFrame(animate);
-    };
-
-    animFrame = requestAnimationFrame(animate);
-
-    cleanupRef.current = () => {
-      cancelAnimationFrame(animFrame);
-      try {
+      frame++;
+      if (frame < maxFrames) {
+        raf = requestAnimationFrame(run);
+      } else {
+        // Capture snapshot
+        const dataUrl = canvas.toDataURL("image/png");
+        snapshotCache.set(sketchName, dataUrl);
+        setSnapshot(dataUrl);
         sketch.destroy();
-      } catch {
-        // ignore cleanup errors
       }
     };
 
+    raf = requestAnimationFrame(run);
+
     return () => {
-      cleanupRef.current?.();
-      cleanupRef.current = null;
+      cancelAnimationFrame(raf);
+      try { sketch.destroy(); } catch { /* ignore */ }
     };
   }, [sketchName, width, height]);
 
+  if (snapshot) {
+    return (
+      <img
+        src={snapshot}
+        alt={sketchName}
+        className="rounded-md w-full h-auto"
+        width={width}
+        height={height}
+      />
+    );
+  }
+
+  // Loading placeholder
   return (
-    <canvas
-      ref={canvasRef}
-      width={width}
-      height={height}
-      className="rounded-md w-full h-auto"
-      style={{ imageRendering: "auto" }}
-    />
+    <div
+      className="rounded-md w-full bg-ls-surface-3 flex items-center justify-center"
+      style={{ height, aspectRatio: `${width}/${height}` }}
+    >
+      <span className="text-[9px] text-ls-text-dim animate-pulse">載入中...</span>
+    </div>
   );
 };
 
