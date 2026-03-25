@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef, useState } from "react";
+import { useEffect, useCallback, useRef, useState, useMemo } from "react";
 import type { BackgroundConfig, SlideConfig, TransitionType } from "@/types/layerslide";
 import { EngineProvider } from "./state/engine-context";
 import { useEngine } from "@/hooks/use-engine";
@@ -6,6 +6,7 @@ import { useFpsMonitor } from "@/hooks/use-fps-monitor";
 import { useVisibilityPause } from "@/hooks/use-visibility-pause";
 import { useTouchNavigation } from "@/hooks/use-touch-navigation";
 import { useAutoSave } from "@/hooks/use-auto-save";
+import { useKeyboardShortcuts, type ShortcutDef } from "@/hooks/use-keyboard-shortcuts";
 import BackgroundLayer from "./BackgroundLayer";
 import SlideLayer from "./SlideLayer";
 import OverlayLayer from "./OverlayLayer";
@@ -101,58 +102,53 @@ const EngineInner = () => {
   });
 
   // Keyboard shortcuts
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
-
-      // Ctrl+Z / Cmd+Z = Undo
-      if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {
-        e.preventDefault();
-        dispatch({ type: "UNDO" });
-        return;
-      }
-      // Ctrl+Y / Cmd+Shift+Z = Redo
-      if ((e.ctrlKey || e.metaKey) && (e.key === "y" || (e.key === "z" && e.shiftKey))) {
-        e.preventDefault();
-        dispatch({ type: "REDO" });
-        return;
-      }
-
-      switch (e.key) {
-        case "ArrowRight":
-        case " ":
-          e.preventDefault();
-          dispatch({ type: "NEXT_SLIDE" });
-          break;
-        case "ArrowLeft":
-          e.preventDefault();
-          dispatch({ type: "PREV_SLIDE" });
-          break;
-        case "p":
-        case "P":
-          e.preventDefault();
-          dispatch({ type: "TOGGLE_PANEL" });
-          break;
-        case "F5":
-          e.preventDefault();
-          setPresenterOpen(true);
-          break;
-        case "Escape":
-          if (presenterOpen) {
-            e.preventDefault();
-            setPresenterOpen(false);
+  const shortcuts = useMemo<ShortcutDef[]>(
+    () => [
+      { key: "z", ctrl: true, label: "復原", action: () => dispatch({ type: "UNDO" }) },
+      { key: "y", ctrl: true, label: "重做", action: () => dispatch({ type: "REDO" }) },
+      { key: "z", ctrl: true, shift: true, label: "重做", action: () => dispatch({ type: "REDO" }) },
+      { key: "ArrowRight", label: "下一張投影片", action: () => dispatch({ type: "NEXT_SLIDE" }) },
+      { key: " ", label: "下一張投影片", action: () => dispatch({ type: "NEXT_SLIDE" }) },
+      { key: "ArrowLeft", label: "上一張投影片", action: () => dispatch({ type: "PREV_SLIDE" }) },
+      { key: "p", label: "切換控制面板", action: () => dispatch({ type: "TOGGLE_PANEL" }) },
+      { key: "P", label: "切換控制面板", action: () => dispatch({ type: "TOGGLE_PANEL" }) },
+      { key: "F5", label: "簡報者模式", action: () => setPresenterOpen(true) },
+      {
+        key: "Escape",
+        label: "關閉簡報者模式",
+        action: () => { if (presenterOpen) setPresenterOpen(false); },
+      },
+      {
+        key: "s",
+        ctrl: true,
+        label: "手動儲存",
+        action: () => console.log("[LayerSlide] Manual save triggered"),
+      },
+      {
+        key: "Delete",
+        label: "刪除選取的覆蓋層",
+        action: () => {
+          if (selectedOverlay) {
+            dispatch({ type: "REMOVE_OVERLAY", slideIndex: currentSlide, overlayId: selectedOverlay.overlayId });
+            setSelectedOverlay(null);
           }
-          break;
-      }
-    },
-    [dispatch, presenterOpen]
+        },
+      },
+      {
+        key: "Backspace",
+        label: "刪除選取的覆蓋層",
+        action: () => {
+          if (selectedOverlay) {
+            dispatch({ type: "REMOVE_OVERLAY", slideIndex: currentSlide, overlayId: selectedOverlay.overlayId });
+            setSelectedOverlay(null);
+          }
+        },
+      },
+    ],
+    [dispatch, presenterOpen, selectedOverlay, currentSlide]
   );
 
-  useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleKeyDown]);
+  useKeyboardShortcuts(shortcuts);
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-ls-surface-0">

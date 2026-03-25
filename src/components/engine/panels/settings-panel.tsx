@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { useI18n } from "@/i18n/i18n-context";
 import { useEngine } from "@/hooks/use-engine";
 import {
   getBuiltInPresets,
@@ -26,6 +27,39 @@ const transitionOptions: { value: TransitionType; label: string }[] = [
   { value: "zoom", label: "縮放" },
   { value: "none", label: "無" },
 ];
+
+function LanguageToggle() {
+  const { locale, setLocale } = useI18n();
+  return (
+    <>
+      <SectionLabel>語系 / Language</SectionLabel>
+      <div className="flex gap-2">
+        <button
+          onClick={() => setLocale("zh")}
+          className={cn(
+            "flex-1 py-2 rounded-lg text-[11px] border transition-colors",
+            locale === "zh"
+              ? "bg-primary/10 border-primary/40 text-foreground font-medium"
+              : "bg-ls-surface-2 border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+          )}
+        >
+          繁中
+        </button>
+        <button
+          onClick={() => setLocale("en")}
+          className={cn(
+            "flex-1 py-2 rounded-lg text-[11px] border transition-colors",
+            locale === "en"
+              ? "bg-primary/10 border-primary/40 text-foreground font-medium"
+              : "bg-ls-surface-2 border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+          )}
+        >
+          English
+        </button>
+      </div>
+    </>
+  );
+}
 
 /** Settings panel with preset management */
 const SettingsPanel = () => {
@@ -205,6 +239,9 @@ const SettingsPanel = () => {
           <span className="text-foreground font-mono">{state.history.length} 步</span>
         </div>
       </div>
+
+      {/* Language */}
+      <LanguageToggle />
 
       {/* Reset */}
       <SectionLabel>重置</SectionLabel>

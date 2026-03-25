@@ -6,6 +6,12 @@ export function generateStandaloneHtml(state: {
   transition: TransitionType;
 }): string {
   const slidesJson = JSON.stringify(state.slides);
+  const transitionType = state.transition || "fade";
+  const bgColor = state.background.params?.color || "0, 230, 200";
+  const bgParticleCount = Math.min((state.background.params?.particleCount as number) || 60, 60);
+  const bgLineDistance = (state.background.params?.lineDistance as number) || 150;
+  const bgSpeed = (state.background.params?.speed as number) || 0.5;
+  const bgParticleSize = (state.background.params?.particleSize as number) || 2;
 
   return `<!DOCTYPE html>
 <html lang="zh-Hant">
@@ -17,9 +23,14 @@ export function generateStandaloneHtml(state: {
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
 body{background:#0a0a0a;color:#fff;display:flex;align-items:center;justify-content:center}
-#stage{position:relative;width:100%;height:100%;overflow:hidden}
-.slide{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s ease}
-.slide.active{opacity:1;pointer-events:auto}
+#bg{position:fixed;inset:0;z-index:0}
+#stage{position:relative;width:100%;height:100%;overflow:hidden;z-index:1}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .5s ease, transform .5s ease}
+.slide.t-fade{opacity:0}
+.slide.t-slide-left{opacity:0;transform:translateX(100%)}
+.slide.t-slide-up{opacity:0;transform:translateY(100%)}
+.slide.t-zoom{opacity:0;transform:scale(0.8)}
+.slide.active{opacity:1;transform:none;pointer-events:auto}
 .overlay{position:absolute;left:0;right:0;text-align:center;padding:1rem 2rem;pointer-events:none}
 .overlay.pos-top{top:10%}
 .overlay.pos-center{top:50%;transform:translateY(-50%)}
@@ -32,22 +43,79 @@ body{background:#0a0a0a;color:#fff;display:flex;align-items:center;justify-conte
 </style>
 </head>
 <body>
+<canvas id="bg"></canvas>
 <div id="stage"></div>
 <div id="counter"></div>
-<div id="hint">← → 切換投影片</div>
+<div id="hint">\u2190 \u2192 \u5207\u63db\u6295\u5f71\u7247</div>
 <script>
 (function(){
+/* ---- Background: particle-network ---- */
+var canvas=document.getElementById("bg");
+var bCtx=canvas.getContext("2d");
+var W=canvas.width=window.innerWidth;
+var H=canvas.height=window.innerHeight;
+var COLOR="${bgColor}";
+var COUNT=${bgParticleCount};
+var LINE_DIST=${bgLineDistance};
+var SPEED=${bgSpeed};
+var P_SIZE=${bgParticleSize};
+var pts=[];
+for(var i=0;i<COUNT;i++){
+  pts.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-0.5)*SPEED,vy:(Math.random()-0.5)*SPEED,s:Math.random()*2+1});
+}
+function drawBg(){
+  bCtx.fillStyle="rgba(10,12,18,0.15)";
+  bCtx.fillRect(0,0,W,H);
+  for(var i=0;i<pts.length;i++){
+    var p=pts[i];
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<0||p.x>W)p.vx*=-1;
+    if(p.y<0||p.y>H)p.vy*=-1;
+    bCtx.beginPath();
+    bCtx.arc(p.x,p.y,p.s*(P_SIZE/2),0,Math.PI*2);
+    bCtx.fillStyle="rgba("+COLOR+",0.8)";
+    bCtx.fill();
+  }
+  for(var i=0;i<pts.length;i++){
+    for(var j=i+1;j<pts.length;j++){
+      var dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y;
+      var dist=Math.sqrt(dx*dx+dy*dy);
+      if(dist<LINE_DIST){
+        bCtx.beginPath();
+        bCtx.moveTo(pts[i].x,pts[i].y);
+        bCtx.lineTo(pts[j].x,pts[j].y);
+        bCtx.strokeStyle="rgba("+COLOR+","+(0.3*(1-dist/LINE_DIST))+")";
+        bCtx.lineWidth=0.5;
+        bCtx.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(drawBg);
+}
+drawBg();
+window.addEventListener("resize",function(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;});
+
+/* ---- Slides ---- */
 var slides=${slidesJson};
+var transition="${transitionType}";
 var current=0;
 var stage=document.getElementById("stage");
 var counter=document.getElementById("counter");
 
+function transClass(){
+  if(transition==="slide-left") return "t-slide-left";
+  if(transition==="slide-up") return "t-slide-up";
+  if(transition==="zoom") return "t-zoom";
+  return "t-fade";
+}
+
 function posClass(p){return "pos-"+(p||"center")}
 
 function buildSlides(){
+  var tc=transClass();
   slides.forEach(function(s,i){
     var div=document.createElement("div");
-    div.className="slide"+(i===0?" active":"");
+    div.className="slide "+tc+(i===0?" active":"");
     div.dataset.index=i;
 
     (s.overlays||[]).forEach(function(o){
@@ -70,7 +138,7 @@ function buildSlides(){
         ov.appendChild(img);
       } else {
         var span=document.createElement("span");
-        span.textContent=o.text||"";
+        span.innerHTML=o.text||"";
         if(o.style){
           if(o.style.fontSize) span.style.fontSize=o.style.fontSize;
           if(o.style.fontFamily) span.style.fontFamily=o.style.fontFamily;

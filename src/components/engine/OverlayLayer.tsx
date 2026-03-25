@@ -46,7 +46,7 @@ function TypewriterText({ html, speed = 30 }: { html: string; speed?: number }) 
 
   // Build visible HTML by counting visible chars
   const visibleHtml = getVisibleHtml(html, displayLength);
-  const cursor = displayLength < plainText.current.length ? "▌" : "";
+  const cursor = displayLength < plainText.current.length ? "\u258C" : "";
 
   return (
     <span dangerouslySetInnerHTML={{ __html: visibleHtml + cursor }} />
@@ -91,6 +91,8 @@ interface DragState {
 /** Layer 2: Real-time editable text overlay */
 const OverlayLayer = ({ overlays, editMode = false, onSelectOverlay }: OverlayLayerProps) => {
   const { dispatch, state } = useEngine();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const editableRef = useRef<HTMLDivElement | null>(null);
   const dragRef = useRef<DragState>({
     isDragging: false,
     overlayId: null,
@@ -102,9 +104,17 @@ const OverlayLayer = ({ overlays, editMode = false, onSelectOverlay }: OverlayLa
   const overlayRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const [dragPos, setDragPos] = useState<{ id: string; x: number; y: number } | null>(null);
 
+  // Focus the contentEditable div when editing starts
+  useEffect(() => {
+    if (editingId && editableRef.current) {
+      editableRef.current.focus();
+    }
+  }, [editingId]);
+
   const handleMouseDown = useCallback(
     (e: React.MouseEvent, overlay: TextOverlay) => {
       if (!editMode) return;
+      if (editingId === overlay.id) return; // don't drag while editing
       e.preventDefault();
       e.stopPropagation();
 
@@ -134,7 +144,7 @@ const OverlayLayer = ({ overlays, editMode = false, onSelectOverlay }: OverlayLa
       };
       setDragPos({ id: overlay.id, x: startX, y: startY });
     },
-    [editMode]
+    [editMode, editingId]
   );
 
   const handleMouseMove = useCallback(
@@ -217,6 +227,32 @@ const OverlayLayer = ({ overlays, editMode = false, onSelectOverlay }: OverlayLa
     };
   }, [editMode, handleMouseMove, handleMouseUp]);
 
+  const handleDoubleClick = useCallback(
+    (e: React.MouseEvent, overlay: TextOverlay) => {
+      if (!editMode) return;
+      if (overlay.type === "image") return; // can't text-edit images
+      e.preventDefault();
+      e.stopPropagation();
+      setEditingId(overlay.id);
+    },
+    [editMode]
+  );
+
+  const handleEditBlur = useCallback(
+    (overlay: TextOverlay) => {
+      if (!editableRef.current) return;
+      const newHtml = editableRef.current.innerHTML;
+      dispatch({
+        type: "UPDATE_OVERLAY",
+        slideIndex: state.currentSlide,
+        overlayId: overlay.id,
+        updates: { text: newHtml },
+      });
+      setEditingId(null);
+    },
+    [dispatch, state.currentSlide]
+  );
+
   /** Get position style for an overlay, accounting for active drag */
   const getPositionStyle = (
     overlay: TextOverlay
@@ -248,6 +284,8 @@ const OverlayLayer = ({ overlays, editMode = false, onSelectOverlay }: OverlayLa
     if (overlay.position === "custom" && overlay.customPosition) return "";
     return positionClasses[overlay.position] ?? "items-center";
   };
+
+  const isEditing = (overlayId: string) => editingId === overlayId;
 
   return (
     <div
@@ -285,7 +323,12 @@ const OverlayLayer = ({ overlays, editMode = false, onSelectOverlay }: OverlayLa
               className={cn(
                 "max-w-4xl text-center",
                 editMode
-                  ? "pointer-events-auto cursor-move border border-dashed border-white/30 rounded-lg hover:border-white/60"
+                  ? cn(
+                      "pointer-events-auto border border-dashed rounded-lg hover:border-white/60",
+                      isEditing(overlay.id)
+                        ? "cursor-text border-cyan-400/70"
+                        : "cursor-move border-white/30"
+                    )
                   : "pointer-events-auto"
               )}
               style={
@@ -304,6 +347,7 @@ const OverlayLayer = ({ overlays, editMode = false, onSelectOverlay }: OverlayLa
                     }
               }
               onMouseDown={(e) => handleMouseDown(e, overlay)}
+              onDoubleClick={(e) => handleDoubleClick(e, overlay)}
             >
               {(overlay.type === "image" && overlay.imageSrc) ? (
                 <img
@@ -319,6 +363,15 @@ const OverlayLayer = ({ overlays, editMode = false, onSelectOverlay }: OverlayLa
                     opacity: overlay.imageOpacity ?? 1,
                     borderRadius: overlay.imageBorderRadius ? `${overlay.imageBorderRadius}px` : undefined,
                   }}
+                />
+              ) : isEditing(overlay.id) ? (
+                <div
+                  ref={editableRef}
+                  contentEditable="true"
+                  suppressContentEditableWarning
+                  dangerouslySetInnerHTML={{ __html: overlay.text }}
+                  onBlur={() => handleEditBlur(overlay)}
+                  style={{ outline: "none", minWidth: "1em", minHeight: "1em" }}
                 />
               ) : overlay.animation === "typewriter" ? (
                 <TypewriterText html={overlay.text} />
